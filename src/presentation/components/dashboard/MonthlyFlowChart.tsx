@@ -9,8 +9,14 @@ interface MonthlyFlowChartProps {
   }>
 }
 
+interface TooltipProps {
+  active?: boolean
+  payload?: Array<{ value: number }>
+  label?: string
+}
+
 export function MonthlyFlowChart({ data }: MonthlyFlowChartProps) {
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border border-border rounded-lg shadow-lg p-3">

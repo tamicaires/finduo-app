@@ -108,7 +108,7 @@ export function useInputFormatter<T extends FieldValues = FieldValues>({
    * Processes input value based on type before storing in form
    */
   const processValue = useCallback(
-    (input: string, inputType: InputFieldType): any => {
+    (input: string, inputType: InputFieldType): number | string | undefined => {
       if (!input) return undefined
 
       switch (inputType) {

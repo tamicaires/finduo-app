@@ -28,7 +28,12 @@ export function ExpensesByCategoryChart({ data }: ExpensesByCategoryChartProps) 
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0)
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipProps {
+    active?: boolean
+    payload?: Array<{ name: string; value: number }>
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const percentage = ((payload[0].value / total) * 100).toFixed(1)
       return (
@@ -57,7 +62,7 @@ export function ExpensesByCategoryChart({ data }: ExpensesByCategoryChartProps) 
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={(entry: any) => {
+              label={(entry: { value: number }) => {
                 const percentage = ((Number(entry.value) / total) * 100).toFixed(0)
                 return Number(percentage) > 5 ? `${percentage}%` : ''
               }}
