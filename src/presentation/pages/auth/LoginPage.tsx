@@ -30,7 +30,7 @@ export function LoginPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-bold text-center">FINDUO</CardTitle>
           <CardDescription className="text-center">
-            Gestão financeira para casais
+            Gestão financeira para casaisssS
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,7 +54,7 @@ export function LoginPage() {
                 placeholder="••••••••"
               />
 
-              <Button type="submit" className="w-full" disabled={isSigningIn}>
+              <Button type="submit" className="w-full" disabled={isSigningIn} variant="destructive">
                 {isSigningIn ? <LoadingSpinner size="sm" /> : 'Entrar'}
               </Button>
             </form>
