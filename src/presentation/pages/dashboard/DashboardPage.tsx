@@ -48,89 +48,110 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">
-                {formatCurrency(dashboardData?.totalBalance ?? 0)}
+                {formatCurrency(dashboardData?.total_balance ?? 0)}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Receitas</CardTitle>
+              <CardTitle>Receitas Mensais</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-green-600">
-                {formatCurrency(dashboardData?.totalIncome ?? 0)}
+                {formatCurrency(dashboardData?.monthly_income ?? 0)}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Despesas</CardTitle>
+              <CardTitle>Despesas Mensais</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-red-600">
-                {formatCurrency(dashboardData?.totalExpenses ?? 0)}
+                {formatCurrency(dashboardData?.monthly_expenses ?? 0)}
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {dashboardData?.accounts && dashboardData.accounts.length > 0 && (
+        {dashboardData?.free_spending && (
           <div className="mt-6">
-            <h3 className="mb-4 text-xl font-bold">Contas</h3>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {dashboardData.accounts.map((account) => (
-                <Card key={account.id}>
-                  <CardHeader>
-                    <CardTitle className="text-base">{account.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold">
-                      {formatCurrency(account.balance)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{account.type}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0 && (
-          <div className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Transações Recentes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {dashboardData.recentTransactions.map((transaction) => (
-                    <div
-                      key={transaction.id}
-                      className="flex items-center justify-between border-b pb-3 last:border-0"
-                    >
-                      <div>
-                        <p className="font-medium">{transaction.description}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {transaction.category}
-                        </p>
-                      </div>
-                      <p
-                        className={`text-lg font-bold ${
-                          transaction.type === 'INCOME'
-                            ? 'text-green-600'
-                            : 'text-red-600'
-                        }`}
-                      >
-                        {transaction.type === 'INCOME' ? '+' : '-'}
-                        {formatCurrency(transaction.amount)}
-                      </p>
+            <h3 className="mb-4 text-xl font-bold">Gastos Livres</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {dashboardData.free_spending.current_user_is_a ? 'Meus Gastos' : 'Parceiro(a)'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Limite:</span>
+                      <span className="font-medium">
+                        {formatCurrency(dashboardData.free_spending.user_a.monthly)}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Usado:</span>
+                      <span className="font-medium text-red-600">
+                        {formatCurrency(dashboardData.free_spending.user_a.used)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Disponível:</span>
+                      <span className="font-medium text-green-600">
+                        {formatCurrency(dashboardData.free_spending.user_a.remaining)}
+                      </span>
+                    </div>
+                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary"
+                        style={{ width: `${dashboardData.free_spending.user_a.percentage_used}%` }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {dashboardData.free_spending.current_user_is_a ? 'Parceiro(a)' : 'Meus Gastos'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Limite:</span>
+                      <span className="font-medium">
+                        {formatCurrency(dashboardData.free_spending.user_b.monthly)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Usado:</span>
+                      <span className="font-medium text-red-600">
+                        {formatCurrency(dashboardData.free_spending.user_b.used)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Disponível:</span>
+                      <span className="font-medium text-green-600">
+                        {formatCurrency(dashboardData.free_spending.user_b.remaining)}
+                      </span>
+                    </div>
+                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary"
+                        style={{ width: `${dashboardData.free_spending.user_b.percentage_used}%` }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
       </main>
