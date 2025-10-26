@@ -81,7 +81,7 @@ export function DashboardPageNew() {
         <div className="relative w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search for anything..."
+            placeholder="Buscar por qualquer coisa..."
             className="pl-10 bg-card border-border"
           />
         </div>
@@ -97,7 +97,7 @@ export function DashboardPageNew() {
             <Card className="p-6 bg-card border-border">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm mb-2">Total Income</p>
+                  <p className="text-muted-foreground text-sm mb-2">Receitas Totais</p>
                   <h2 className="text-3xl font-bold mb-2">{formatCurrency(dashboardData?.monthly_income || 0)}</h2>
                   <span className="text-green-500 text-sm">+12,5%</span>
                 </div>
@@ -111,7 +111,7 @@ export function DashboardPageNew() {
             <Card className="p-6 bg-card border-border">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm mb-2">Total Outcome</p>
+                  <p className="text-muted-foreground text-sm mb-2">Despesas Totais</p>
                   <h2 className="text-3xl font-bold mb-2">{formatCurrency(dashboardData?.monthly_expenses || 0)}</h2>
                   <span className="text-red-500 text-sm">+8,3%</span>
                 </div>
@@ -128,17 +128,17 @@ export function DashboardPageNew() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold">Analytics</h3>
                 <select className="bg-secondary border-border rounded-lg px-4 py-2 text-sm">
-                  <option>2020</option>
+                  <option>2025</option>
                 </select>
               </div>
               <div className="flex items-center gap-6 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                  <span className="text-sm text-muted-foreground">Income</span>
+                  <div className="w-3 h-3 rounded-full bg-primary"></div>
+                  <span className="text-sm text-muted-foreground">Receitas</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
-                  <span className="text-sm text-muted-foreground">Outcome</span>
+                  <span className="text-sm text-muted-foreground">Despesas</span>
                 </div>
               </div>
             </div>
@@ -175,17 +175,17 @@ export function DashboardPageNew() {
           {/* Transactions Table */}
           <Card className="p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold">Transaction</h3>
+              <h3 className="text-xl font-bold">Transações</h3>
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search for anything..."
+                    placeholder="Buscar transações..."
                     className="pl-10 bg-secondary border-border w-64"
                   />
                 </div>
                 <button className="px-4 py-2 bg-secondary border-border rounded-lg text-sm">
-                  📅 10 May - 20 May
+                  📅 Este mês
                 </button>
               </div>
             </div>
@@ -193,10 +193,10 @@ export function DashboardPageNew() {
             <table className="w-full">
               <thead>
                 <tr className="text-left text-muted-foreground text-sm border-b border-border">
-                  <th className="pb-3 font-medium">Name</th>
-                  <th className="pb-3 font-medium">Date</th>
-                  <th className="pb-3 font-medium">Amount</th>
-                  <th className="pb-3 font-medium">Status</th>
+                  <th className="pb-3 font-medium">Nome</th>
+                  <th className="pb-3 font-medium">Data</th>
+                  <th className="pb-3 font-medium">Valor</th>
+                  <th className="pb-3 font-medium">Tipo</th>
                 </tr>
               </thead>
               <tbody>
@@ -234,7 +234,7 @@ export function DashboardPageNew() {
         <div className="space-y-6">
           {/* My Card */}
           <Card className="p-6 bg-card border-border">
-            <h3 className="text-xl font-bold mb-4">My Card</h3>
+            <h3 className="text-xl font-bold mb-4">Meu Cartão</h3>
 
             {/* Card Balance */}
             <div className="mb-4">
@@ -263,10 +263,10 @@ export function DashboardPageNew() {
             {/* Card Actions */}
             <div className="grid grid-cols-2 gap-3">
               <button className="py-3 bg-primary text-primary-foreground rounded-lg font-medium">
-                Manage Cards
+                Gerenciar Cartões
               </button>
               <button className="py-3 bg-secondary border border-border rounded-lg font-medium">
-                Transfer
+                Transferir
               </button>
             </div>
           </Card>
@@ -274,9 +274,9 @@ export function DashboardPageNew() {
           {/* Activity */}
           <Card className="p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold">Activity</h3>
+              <h3 className="text-xl font-bold">Atividade</h3>
               <button className="px-4 py-2 bg-secondary border-border rounded-lg text-sm">
-                Month
+                Mensal
               </button>
             </div>
 
@@ -320,7 +320,7 @@ export function DashboardPageNew() {
             </div>
 
             <button className="w-full mt-6 py-3 border border-border rounded-lg font-medium hover:bg-secondary transition-colors">
-              View all activity →
+              Ver todas atividades →
             </button>
           </Card>
         </div>
