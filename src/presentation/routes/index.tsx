@@ -1,7 +1,10 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { PrivateRoute } from '@presentation/components/routes/PrivateRoute'
+import { AppLayout } from '@presentation/components/layout/AppLayout'
 import { LoginPage } from '@presentation/pages/auth/LoginPage'
 import { DashboardPage } from '@presentation/pages/dashboard/DashboardPage'
+import { AccountsPage } from '@presentation/pages/accounts/AccountsPage'
+import { TransactionsPage } from '@presentation/pages/transactions/TransactionsPage'
 
 export const router = createBrowserRouter([
   {
@@ -16,7 +19,29 @@ export const router = createBrowserRouter([
     path: '/dashboard',
     element: (
       <PrivateRoute>
-        <DashboardPage />
+        <AppLayout>
+          <DashboardPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/accounts',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <AccountsPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/transactions',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <TransactionsPage />
+        </AppLayout>
       </PrivateRoute>
     ),
   },
