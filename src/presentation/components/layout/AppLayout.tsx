@@ -51,16 +51,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Sidebar - Desktop (Fixed width) */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r bg-card lg:block">
+      {/* Sidebar - Desktop (Collapsible with hover) */}
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-16 border-r bg-card transition-all duration-300 hover:w-64 lg:block group">
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-20 items-center px-6 border-b">
+          <div className="flex h-20 items-center justify-center px-3 border-b group-hover:justify-start group-hover:px-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm flex-shrink-0">
                 FD
               </div>
-              <div>
+              <div className="hidden group-hover:block">
                 <h1 className="text-xl font-bold text-primary">FINDUO</h1>
                 <p className="text-[10px] text-muted-foreground">Gestão Financeira</p>
               </div>
@@ -76,15 +76,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.path}
                   to={item.path}
+                  title={item.label}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all',
+                    'flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all',
                     isActive
                       ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                   )}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="truncate">{item.label}</span>
+                  <span className="hidden truncate group-hover:inline-block">{item.label}</span>
                 </Link>
               )
             })}
@@ -96,13 +97,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               variant="ghost"
               size="sm"
               onClick={toggleTheme}
-              className="w-full justify-start"
+              className={cn(
+                'w-full justify-center group-hover:justify-start',
+                'transition-all'
+              )}
+              title="Alternar tema"
             >
-              <ThemeIcon className="h-4 w-4 mr-3" />
-              <span>Modo {theme === 'light' ? 'Claro' : theme === 'dark' ? 'Escuro' : 'Sistema'}</span>
+              <ThemeIcon className="h-4 w-4 group-hover:mr-3" />
+              <span className="hidden group-hover:inline">
+                Modo {theme === 'light' ? 'Claro' : theme === 'dark' ? 'Escuro' : 'Sistema'}
+              </span>
             </Button>
 
-            <div className="px-3 py-2 text-xs text-muted-foreground truncate border-t">
+            <div className="hidden px-3 py-2 text-xs text-muted-foreground truncate border-t group-hover:block">
               {user?.name}
             </div>
 
@@ -110,10 +117,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
+              className={cn(
+                'w-full justify-center group-hover:justify-start',
+                'text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950',
+                'transition-all'
+              )}
+              title="Sair"
             >
-              <LogOut className="h-4 w-4 mr-3" />
-              <span>Sair</span>
+              <LogOut className="h-4 w-4 group-hover:mr-3" />
+              <span className="hidden group-hover:inline">Sair</span>
             </Button>
           </div>
         </div>
@@ -196,7 +208,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </nav>
 
       {/* Main Content */}
-      <main className="lg:pl-64 pb-16 lg:pb-0">
+      <main className="lg:pl-16 pb-16 lg:pb-0">
         {children}
       </main>
     </div>

@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { PrivateRoute } from '@presentation/components/routes/PrivateRoute'
 import { AppLayout } from '@presentation/components/layout/AppLayout'
 import { LoginPage } from '@presentation/pages/auth/LoginPage'
-import { DashboardPage } from '@presentation/pages/dashboard/DashboardPage'
+import { DashboardPageNew as DashboardPage } from '@presentation/pages/dashboard/DashboardPageNew'
 import { AccountsPage } from '@presentation/pages/accounts/AccountsPage'
 import { TransactionsPage } from '@presentation/pages/transactions/TransactionsPage'
 
