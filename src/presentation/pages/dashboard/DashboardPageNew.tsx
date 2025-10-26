@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { BiSearch } from 'react-icons/bi'
 import { TbArrowDownRight, TbArrowUpRight } from 'react-icons/tb'
 import { BsCalendar4Week, BsCreditCard2Front } from 'react-icons/bs'
-import { MdPix, MdAccountBalance, MdQrCodeScanner, MdPhone } from 'react-icons/md'
-import { HiArrowUp, HiArrowDown } from 'react-icons/hi'
+import { MdPix, MdQrCodeScanner, MdPhone } from 'react-icons/md'
+import { HiArrowUp } from 'react-icons/hi'
 import { Input } from '@presentation/components/ui/input'
 import { Card } from '@presentation/components/ui/card'
 import { useDashboard } from '@application/hooks/use-dashboard'
@@ -360,10 +360,16 @@ export function DashboardPageNew() {
 
             {/* Card Actions */}
             <div className="grid grid-cols-2 gap-2 md:gap-3">
-              <button className="py-2.5 md:py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm md:text-base hover:bg-primary/90 transition-colors">
+              <button
+                onClick={() => navigate('/accounts')}
+                className="py-2.5 md:py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm md:text-base hover:bg-primary/90 transition-colors"
+              >
                 Gerenciar Cartões
               </button>
-              <button className="py-2.5 md:py-3 bg-secondary border border-border rounded-lg font-medium text-sm md:text-base hover:bg-secondary/80 transition-colors">
+              <button
+                onClick={() => navigate('/transactions')}
+                className="py-2.5 md:py-3 bg-secondary border border-border rounded-lg font-medium text-sm md:text-base hover:bg-secondary/80 transition-colors"
+              >
                 Transferir
               </button>
             </div>
