@@ -62,11 +62,15 @@ export function ExpensesByCategoryChart({ data }: ExpensesByCategoryChartProps) 
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={((props: any) => {
-                const value = props.value || 0
-                const percentage = ((Number(value) / total) * 100).toFixed(0)
-                return Number(percentage) > 5 ? `${percentage}%` : ''
-              }) as any}
+              label={
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ((props: any) => {
+                  const value = props.value || 0
+                  const percentage = ((Number(value) / total) * 100).toFixed(0)
+                  return Number(percentage) > 5 ? `${percentage}%` : ''
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                }) as any
+              }
               outerRadius={120}
               innerRadius={60}
               fill="#8884d8"
