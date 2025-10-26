@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { BiSearch } from 'react-icons/bi'
 import { TbArrowDownRight, TbArrowUpRight } from 'react-icons/tb'
 import { BsCalendar4Week, BsCreditCard2Front } from 'react-icons/bs'
+import { MdPix, MdAccountBalance, MdQrCodeScanner, MdPhone } from 'react-icons/md'
+import { HiArrowUp, HiArrowDown } from 'react-icons/hi'
 import { Input } from '@presentation/components/ui/input'
 import { Card } from '@presentation/components/ui/card'
 import { useDashboard } from '@application/hooks/use-dashboard'
@@ -76,18 +78,23 @@ export function DashboardPageNew() {
 
   return (
     <div className="p-4 md:p-8 space-y-4 md:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Bem-vindo de volta, {user?.name || 'Usuário'}! 👋</h1>
-          <p className="text-sm md:text-base text-muted-foreground">Aqui está o que está acontecendo com suas finanças hoje.</p>
-        </div>
-        <div className="relative w-full md:w-96">
-          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por qualquer coisa..."
-            className="pl-10 bg-card border-border"
-          />
+      {/* Header - Mobile: Compacto, Desktop: Completo */}
+      <div className="flex flex-col gap-3 md:gap-4">
+        {/* Mobile: Saudação + Busca em coluna */}
+        <div className="md:flex md:items-center md:justify-between">
+          <div className="mb-3 md:mb-0">
+            <h1 className="text-xl md:text-3xl font-bold text-foreground">Olá, {user?.name?.split(' ')[0] || 'Usuário'}! 👋</h1>
+            <p className="text-xs md:text-base text-muted-foreground mt-1">
+              {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+          </div>
+          <div className="relative w-full md:w-96">
+            <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar..."
+              className="pl-9 md:pl-10 bg-card border-border h-10 md:h-11 text-sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -95,8 +102,57 @@ export function DashboardPageNew() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Left Column - Analytics + Transactions */}
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          {/* Income and Outcome Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Mobile: Card de Saldo primeiro (estilo Nubank/Inter) */}
+          <div className="block lg:hidden space-y-4">
+            <Card className="p-5 bg-gradient-to-br from-primary to-orange-600 text-white border-0">
+              <p className="text-orange-100 text-xs mb-1">Saldo disponível</p>
+              <h2 className="text-3xl font-bold mb-4">{formatCurrency(dashboardData?.total_balance || 0)}</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-orange-100 text-xs mb-1">Receitas</p>
+                  <p className="text-lg font-semibold">{formatCurrency(dashboardData?.monthly_income || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-orange-100 text-xs mb-1">Despesas</p>
+                  <p className="text-lg font-semibold">{formatCurrency(dashboardData?.monthly_expenses || 0)}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Ações Rápidas - Mobile (estilo Inter/Nubank) */}
+            <div className="grid grid-cols-4 gap-3">
+              <button className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MdPix className="text-primary text-2xl" />
+                </div>
+                <span className="text-xs font-medium">Pix</span>
+              </button>
+              <button className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MdQrCodeScanner className="text-primary text-2xl" />
+                </div>
+                <span className="text-xs font-medium">Pagar</span>
+              </button>
+              <button
+                onClick={() => navigate('/transactions')}
+                className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <HiArrowUp className="text-primary text-2xl" />
+                </div>
+                <span className="text-xs font-medium">Enviar</span>
+              </button>
+              <button className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MdPhone className="text-primary text-2xl" />
+                </div>
+                <span className="text-xs font-medium">Recarga</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop: Income and Outcome Cards lado a lado */}
+          <div className="hidden lg:grid grid-cols-2 gap-4">
             {/* Total Income */}
             <Card className="p-4 md:p-6 bg-card border-border">
               <div className="flex items-start justify-between">
