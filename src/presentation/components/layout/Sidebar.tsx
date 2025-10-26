@@ -26,7 +26,8 @@ const bottomItems = [
 
 export function Sidebar() {
   const location = useLocation()
-  const { isDarkMode, toggleDarkMode } = useUIStore()
+  const { theme, toggleTheme } = useUIStore()
+  const isDarkMode = theme === 'dark'
 
   return (
     <aside className="w-64 h-screen bg-card border-r border-border flex flex-col">
@@ -87,7 +88,7 @@ export function Sidebar() {
 
         {/* Dark Mode Toggle */}
         <button
-          onClick={toggleDarkMode}
+          onClick={toggleTheme}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full transition-colors"
         >
           {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}

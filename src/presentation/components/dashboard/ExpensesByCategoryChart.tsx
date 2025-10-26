@@ -57,9 +57,9 @@ export function ExpensesByCategoryChart({ data }: ExpensesByCategoryChartProps) 
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={(entry) => {
-                const percentage = ((entry.value / total) * 100).toFixed(0)
-                return percentage > 5 ? `${percentage}%` : ''
+              label={(entry: any) => {
+                const percentage = ((Number(entry.value) / total) * 100).toFixed(0)
+                return Number(percentage) > 5 ? `${percentage}%` : ''
               }}
               outerRadius={120}
               innerRadius={60}
@@ -67,7 +67,7 @@ export function ExpensesByCategoryChart({ data }: ExpensesByCategoryChartProps) 
               dataKey="value"
               animationDuration={800}
             >
-              {chartData.map((entry, index) => (
+              {chartData.map((_entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>

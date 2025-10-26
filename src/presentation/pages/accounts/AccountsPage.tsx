@@ -100,8 +100,10 @@ export function AccountsPage() {
         return <MdAccountBalance className="h-5 w-5 md:h-6 md:w-6 text-primary" />
       case AccountType.SAVINGS:
         return <MdSavings className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-      case AccountType.CREDIT_CARD:
+      case AccountType.INVESTMENT:
         return <MdCreditCard className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+      case AccountType.WALLET:
+        return <MdWallet className="h-5 w-5 md:h-6 md:w-6 text-primary" />
       default:
         return <MdWallet className="h-5 w-5 md:h-6 md:w-6 text-primary" />
     }

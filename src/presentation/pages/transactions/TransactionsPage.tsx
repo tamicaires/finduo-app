@@ -62,10 +62,6 @@ export function TransactionsPage() {
     return d.toLocaleDateString('pt-BR')
   }
 
-  const getAccountName = (accountId: string) => {
-    return accounts?.find((acc) => acc.id === accountId)?.name || 'Desconhecida'
-  }
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
