@@ -3,21 +3,21 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signInSchema, type SignInInput } from '@infrastructure/validators/auth.schema'
 import { useAuth } from '@application/hooks/use-auth'
 import { Button } from '@presentation/components/ui/button'
-import { Input } from '@presentation/components/ui/input'
-import { Label } from '@presentation/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@presentation/components/ui/card'
+import { Form } from '@presentation/components/ui/form'
+import { InputField } from '@presentation/components/form'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { ErrorMessage } from '@presentation/components/shared/ErrorMessage'
 
 export function LoginPage() {
   const { signIn, isSigningIn, signInError } = useAuth()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignInInput>({
+  const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   })
 
   const onSubmit = (data: SignInInput) => {
@@ -34,41 +34,31 @@ export function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {signInError && (
-              <ErrorMessage message="Credenciais inválidas. Tente novamente." />
-            )}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {signInError && (
+                <ErrorMessage message="Credenciais inválidas. Tente novamente." />
+              )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
+              <InputField
+                name="email"
+                label="Email"
                 type="email"
                 placeholder="seu@email.com"
-                {...register('email')}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
+              <InputField
+                name="password"
+                label="Senha"
                 type="password"
                 placeholder="••••••••"
-                {...register('password')}
               />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
 
-            <Button type="submit" className="w-full" disabled={isSigningIn}>
-              {isSigningIn ? <LoadingSpinner size="sm" /> : 'Entrar'}
-            </Button>
-          </form>
+              <Button type="submit" className="w-full" disabled={isSigningIn}>
+                {isSigningIn ? <LoadingSpinner size="sm" /> : 'Entrar'}
+              </Button>
+            </form>
+          </Form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
             <p>
