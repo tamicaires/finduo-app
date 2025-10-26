@@ -62,10 +62,11 @@ export function ExpensesByCategoryChart({ data }: ExpensesByCategoryChartProps) 
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={(entry: { value: number }) => {
-                const percentage = ((Number(entry.value) / total) * 100).toFixed(0)
+              label={((props: any) => {
+                const value = props.value || 0
+                const percentage = ((Number(value) / total) * 100).toFixed(0)
                 return Number(percentage) > 5 ? `${percentage}%` : ''
-              }}
+              }) as any}
               outerRadius={120}
               innerRadius={60}
               fill="#8884d8"

@@ -108,7 +108,7 @@ export function useInputFormatter<T extends FieldValues = FieldValues>({
    * Processes input value based on type before storing in form
    */
   const processValue = useCallback(
-    (input: string, inputType: InputFieldType): number | string | undefined => {
+    (input: string, inputType: InputFieldType): number | string | Date | undefined => {
       if (!input) return undefined
 
       switch (inputType) {
@@ -164,11 +164,13 @@ export function useInputFormatter<T extends FieldValues = FieldValues>({
       const input = event.target.value
       const processedValue = processValue(input, type)
 
-      form.setValue(name, processedValue, {
-        shouldValidate: true,
-        shouldDirty: true,
-        shouldTouch: true,
-      })
+      if (processedValue !== undefined) {
+        form.setValue(name, processedValue as never, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        })
+      }
     },
     [form, name, type, processValue]
   )
