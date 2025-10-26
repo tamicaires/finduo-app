@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { MdSwapHoriz, MdAccountBalanceWallet, MdSwapVert, MdAttachMoney, MdLabel, MdCalendarToday, MdDescription } from 'react-icons/md'
 import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
@@ -12,16 +13,6 @@ import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import { TransactionCategory, TransactionCategoryLabels } from '@core/enums/TransactionCategory'
 import type { Account } from '@core/entities/Account'
-import {
-  ArrowRightLeft,
-  Wallet,
-  ArrowUpDown,
-  DollarSign,
-  Tag,
-  Calendar,
-  FileText,
-  Sparkles,
-} from 'lucide-react'
 
 const transactionSchema = z.object({
   account_id: z.string().min(1, 'Conta é obrigatória'),
@@ -106,7 +97,7 @@ export function TransactionFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogWrapper
-          icon={ArrowRightLeft}
+          icon={MdSwapHoriz}
           description="Registre uma entrada ou saída de dinheiro em uma das suas contas"
         >
           <DialogTitle>Nova Transação</DialogTitle>
@@ -120,7 +111,7 @@ export function TransactionFormDialog({
                 label="Conta"
                 placeholder="Selecione a conta"
                 options={accountOptions}
-                icon={Wallet}
+                icon={MdAccountBalanceWallet}
                 searchable
                 required
               />
@@ -130,7 +121,7 @@ export function TransactionFormDialog({
                 label="Tipo"
                 placeholder="Selecione o tipo"
                 options={typeOptions}
-                icon={ArrowUpDown}
+                icon={MdSwapVert}
                 required
               />
 
@@ -139,7 +130,7 @@ export function TransactionFormDialog({
                 label="Valor"
                 type="money"
                 placeholder="R$ 0,00"
-                icon={DollarSign}
+                icon={MdAttachMoney}
                 required
               />
 
@@ -148,7 +139,7 @@ export function TransactionFormDialog({
                 label="Categoria"
                 placeholder="Selecione a categoria"
                 options={categoryOptions}
-                icon={Tag}
+                icon={MdLabel}
                 searchable
                 required
               />
@@ -157,14 +148,14 @@ export function TransactionFormDialog({
                 name="transaction_date"
                 label="Data"
                 type="date"
-                icon={Calendar}
+                icon={MdCalendarToday}
               />
 
               <InputField
                 name="description"
                 label="Descrição (opcional)"
                 placeholder="Ex: Almoço no restaurante"
-                icon={FileText}
+                icon={MdDescription}
               />
             </div>
 

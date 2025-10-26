@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { MdAccountBalanceWallet, MdCreditCard, MdAttachMoney } from 'react-icons/md'
 import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
@@ -11,7 +12,6 @@ import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
 import { AccountType, AccountTypeLabels } from '@core/enums/AccountType'
 import type { Account } from '@core/entities/Account'
-import { Wallet, CreditCard, DollarSign } from 'lucide-react'
 
 const accountSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -80,7 +80,7 @@ export function AccountFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogWrapper
-          icon={Wallet}
+          icon={MdAccountBalanceWallet}
           description={
             account
               ? 'Atualize as informações da sua conta financeira'
@@ -96,7 +96,7 @@ export function AccountFormDialog({
               name="name"
               label="Nome da Conta"
               placeholder="Ex: Conta Corrente Nubank"
-              icon={Wallet}
+              icon={MdAccountBalanceWallet}
               required
             />
 
@@ -105,7 +105,7 @@ export function AccountFormDialog({
               label="Tipo de Conta"
               placeholder="Selecione o tipo"
               options={accountTypeOptions}
-              icon={CreditCard}
+              icon={MdCreditCard}
               required
             />
 
@@ -116,7 +116,7 @@ export function AccountFormDialog({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                icon={DollarSign}
+                icon={MdAttachMoney}
                 required
               />
             )}
