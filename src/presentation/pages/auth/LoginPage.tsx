@@ -25,12 +25,12 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 dark:from-zinc-900 dark:to-zinc-950 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-bold text-center">FINDUO</CardTitle>
           <CardDescription className="text-center">
-            Gestão financeira para casaisssS
+            Gestão financeira para casais
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -59,14 +59,6 @@ export function LoginPage() {
               </Button>
             </form>
           </Form>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>
-              Credenciais de teste:
-              <br />
-              <code className="text-xs">joao@test.com / 123456</code>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
