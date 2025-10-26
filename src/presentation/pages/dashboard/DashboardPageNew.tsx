@@ -2,8 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { BiSearch } from 'react-icons/bi'
 import { TbArrowDownRight, TbArrowUpRight } from 'react-icons/tb'
 import { BsCalendar4Week, BsCreditCard2Front } from 'react-icons/bs'
-import { MdPix, MdQrCodeScanner, MdPhone } from 'react-icons/md'
-import { HiArrowUp } from 'react-icons/hi'
+import { MdAddCircleOutline, MdRemoveCircleOutline, MdBarChart, MdFlag } from 'react-icons/md'
 import { Input } from '@presentation/components/ui/input'
 import { Card } from '@presentation/components/ui/card'
 import { useDashboard } from '@application/hooks/use-dashboard'
@@ -119,34 +118,40 @@ export function DashboardPageNew() {
               </div>
             </Card>
 
-            {/* Ações Rápidas - Mobile (estilo Inter/Nubank) */}
+            {/* Ações Rápidas - Mobile (Controle Financeiro para Casais) */}
             <div className="grid grid-cols-4 gap-3">
-              <button className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <MdPix className="text-primary text-2xl" />
+              <button
+                onClick={() => navigate('/transactions')}
+                className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <MdRemoveCircleOutline className="text-red-500 text-2xl" />
                 </div>
-                <span className="text-xs font-medium">Pix</span>
+                <span className="text-xs font-medium">Despesa</span>
               </button>
-              <button className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <MdQrCodeScanner className="text-primary text-2xl" />
+              <button
+                onClick={() => navigate('/transactions')}
+                className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <MdAddCircleOutline className="text-green-500 text-2xl" />
                 </div>
-                <span className="text-xs font-medium">Pagar</span>
+                <span className="text-xs font-medium">Receita</span>
               </button>
               <button
                 onClick={() => navigate('/transactions')}
                 className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors"
               >
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <HiArrowUp className="text-primary text-2xl" />
+                  <MdBarChart className="text-primary text-2xl" />
                 </div>
-                <span className="text-xs font-medium">Enviar</span>
+                <span className="text-xs font-medium">Relatórios</span>
               </button>
               <button className="flex flex-col items-center gap-2 p-3 bg-card rounded-xl border border-border hover:bg-secondary transition-colors">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <MdPhone className="text-primary text-2xl" />
+                  <MdFlag className="text-primary text-2xl" />
                 </div>
-                <span className="text-xs font-medium">Recarga</span>
+                <span className="text-xs font-medium">Metas</span>
               </button>
             </div>
           </div>
