@@ -3,6 +3,7 @@ import { useDashboard } from '@application/hooks/use-dashboard'
 import { Button } from '@presentation/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
+import { ExpensesChart } from '@presentation/components/charts/ExpensesChart'
 import { formatCurrency } from '@shared/utils/format-currency'
 
 export function DashboardPage() {
@@ -75,6 +76,25 @@ export function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {dashboardData && (
+          <div className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribuição de Despesas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mx-auto max-w-md">
+                  <ExpensesChart
+                    coupleExpenses={dashboardData.couple_expenses}
+                    userAExpenses={dashboardData.free_spending.user_a.used}
+                    userBExpenses={dashboardData.free_spending.user_b.used}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {dashboardData?.free_spending && (
           <div className="mt-6">
