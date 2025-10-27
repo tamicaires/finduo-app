@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@pres
 import { XPBar } from '@presentation/components/gamification/XPBar'
 import { LevelBadge } from '@presentation/components/gamification/LevelBadge'
 import { Trophy, Flame, TrendingUp, CheckCircle2, Calendar, Award, Sparkles } from 'lucide-react'
+import { CoupleRankingCard } from '@presentation/components/gamification/CoupleRankingCard'
 
 export function GamificationPage() {
   const { gameProfile, isLoading, error } = useGameProfile()
@@ -54,6 +55,10 @@ export function GamificationPage() {
           <h1 className="text-3xl font-bold tracking-tight">Progresso</h1>
           <p className="text-muted-foreground mt-1">
             Acompanhe seu nível, experiência e conquistas
+        </div>
+
+        {/* Couple Ranking */}
+        <CoupleRankingCard />
           </p>
         </div>
 

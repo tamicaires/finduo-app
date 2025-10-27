@@ -29,5 +29,6 @@ export const API_ROUTES = {
 
   // Gamification
   GET_GAME_PROFILE: '/gamification/profile',
+  GET_COUPLE_RANKING: '/gamification/profile/couple-ranking',
   AWARD_XP: '/gamification/profile/award-xp',
 } as const
