@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Wallet, ArrowLeftRight, User, LogOut, Sun, Moon, Monitor } from 'lucide-react'
+import { LayoutDashboard, Wallet, ArrowLeftRight, Users, User, LogOut, Sun, Moon, Monitor } from 'lucide-react'
 import { useAuth } from '@application/hooks/use-auth'
 import { useTheme } from '@application/hooks/use-theme'
 import { Button } from '@presentation/components/ui/button'
@@ -21,6 +21,11 @@ const navItems = [
     path: '/transactions',
     label: 'Transações',
     icon: ArrowLeftRight,
+  },
+  {
+    path: '/couple',
+    label: 'Casal',
+    icon: Users,
   },
 ]
 

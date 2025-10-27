@@ -5,6 +5,7 @@ import { LoginPage } from '@presentation/pages/auth/LoginPage'
 import { DashboardPageNew as DashboardPage } from '@presentation/pages/dashboard/DashboardPageNew'
 import { AccountsPage } from '@presentation/pages/accounts/AccountsPage'
 import { TransactionsPage } from '@presentation/pages/transactions/TransactionsPage'
+import { CoupleManagementPage } from '@presentation/pages/couple/CoupleManagementPage'
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +42,16 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <AppLayout>
           <TransactionsPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/couple',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <CoupleManagementPage />
         </AppLayout>
       </PrivateRoute>
     ),
