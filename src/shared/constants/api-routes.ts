@@ -8,6 +8,7 @@ export const API_ROUTES = {
   GET_COUPLE_INFO: '/couple/info',
   GET_DASHBOARD: '/couple/dashboard',
   UPDATE_FREE_SPENDING: '/couple/free-spending',
+  UPDATE_COUPLE_SETTINGS: '/couple/settings',
 
   // Accounts
   CREATE_ACCOUNT: '/accounts',

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Wallet, ArrowLeftRight, Users, User, LogOut, Sun, Moon, Monitor } from 'lucide-react'
+import { LayoutDashboard, Wallet, ArrowLeftRight, Users, Settings, User, LogOut, Sun, Moon, Monitor } from 'lucide-react'
 import { useAuth } from '@application/hooks/use-auth'
 import { useTheme } from '@application/hooks/use-theme'
 import { Button } from '@presentation/components/ui/button'
@@ -26,6 +26,11 @@ const navItems = [
     path: '/couple',
     label: 'Casal',
     icon: Users,
+  },
+  {
+    path: '/settings',
+    label: 'Configurações',
+    icon: Settings,
   },
 ]
 

@@ -6,6 +6,7 @@ import { DashboardPageNew as DashboardPage } from '@presentation/pages/dashboard
 import { AccountsPage } from '@presentation/pages/accounts/AccountsPage'
 import { TransactionsPage } from '@presentation/pages/transactions/TransactionsPage'
 import { CoupleManagementPage } from '@presentation/pages/couple/CoupleManagementPage'
+import { SettingsPage } from '@presentation/pages/settings/SettingsPage'
 
 export const router = createBrowserRouter([
   {
@@ -52,6 +53,16 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <AppLayout>
           <CoupleManagementPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/settings',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <SettingsPage />
         </AppLayout>
       </PrivateRoute>
     ),
