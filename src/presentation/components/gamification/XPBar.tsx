@@ -39,8 +39,8 @@ export function XPBar({
       <div className="relative">
         <Progress
           value={progressPercentage}
-          className="h-3 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950 dark:to-blue-950"
-          indicatorClassName="bg-gradient-to-r from-purple-600 to-blue-600 transition-all duration-500"
+          className="h-3"
+          indicatorClassName="transition-all duration-500"
         />
 
         {showDetails && (

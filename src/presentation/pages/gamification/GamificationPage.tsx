@@ -1,9 +1,9 @@
 import { useGameProfile } from '@application/hooks/use-game-profile'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
-import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@presentation/components/ui/card'
 import { XPBar } from '@presentation/components/gamification/XPBar'
 import { LevelBadge } from '@presentation/components/gamification/LevelBadge'
-import { Gamepad2, Flame, Trophy, Target, Zap } from 'lucide-react'
+import { Trophy, Flame, TrendingUp, CheckCircle2, Calendar, Award, Sparkles } from 'lucide-react'
 
 export function GamificationPage() {
   const { gameProfile, isLoading, error } = useGameProfile()
@@ -20,9 +20,9 @@ export function GamificationPage() {
     return (
       <div className="p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
-          <Card className="border-red-500/20 bg-red-500/5">
+          <Card className="border-destructive/50">
             <CardContent className="p-6">
-              <p className="text-red-600">Erro ao carregar perfil de gamificação: {error}</p>
+              <p className="text-destructive text-sm">{error}</p>
             </CardContent>
           </Card>
         </div>
@@ -36,7 +36,7 @@ export function GamificationPage() {
         <div className="max-w-7xl mx-auto">
           <Card>
             <CardContent className="p-6">
-              <p>Nenhum perfil de gamificação encontrado.</p>
+              <p className="text-sm text-muted-foreground">Nenhum perfil de gamificação encontrado.</p>
             </CardContent>
           </Card>
         </div>
@@ -47,169 +47,219 @@ export function GamificationPage() {
   const { profile, xpForNextLevel, progressPercentage, levelName } = gameProfile
 
   return (
-    <div className="p-6 md:p-8 space-y-6 bg-background min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-            <Gamepad2 className="w-8 h-8 text-purple-600" />
-            Seu Progresso no FindUO
-          </h2>
-          <p className="text-muted-foreground">
-            Acompanhe seu nível, XP e conquistas enquanto gerencia suas finanças
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Progresso</h1>
+          <p className="text-muted-foreground mt-1">
+            Acompanhe seu nível, experiência e conquistas
           </p>
         </div>
 
-        {/* Main Stats Card */}
-        <div className="grid gap-6 md:grid-cols-2 mb-6">
-          {/* Level & XP Card */}
-          <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border-purple-500/20">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-purple-600" />
-                  Nível & Experiência
-                </CardTitle>
-                <LevelBadge level={profile.level} levelName={levelName} size="lg" />
+        {/* Level & XP Card */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-2xl">Nível {profile.level}</CardTitle>
+                <CardDescription>{levelName}</CardDescription>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
+              <LevelBadge level={profile.level} levelName={levelName} size="lg" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Progresso para o próximo nível</span>
+                <span className="font-medium">{progressPercentage.toFixed(0)}%</span>
+              </div>
               <XPBar
                 currentXp={profile.current_xp}
                 totalXp={profile.total_xp}
                 level={profile.level}
                 xpForNextLevel={xpForNextLevel}
                 progressPercentage={progressPercentage}
+                showDetails={false}
               />
-
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="text-center p-4 bg-background/50 rounded-lg border">
-                  <p className="text-muted-foreground text-xs mb-2">XP Atual</p>
-                  <p className="font-bold text-2xl text-purple-600">{profile.current_xp}</p>
-                </div>
-                <div className="text-center p-4 bg-background/50 rounded-lg border">
-                  <p className="text-muted-foreground text-xs mb-2">Total XP</p>
-                  <p className="font-bold text-2xl text-blue-600">{profile.total_xp.toLocaleString()}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Streak Card */}
-          <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-orange-600" />
-                Sequência de Atividade
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-center py-6">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Flame className="w-12 h-12 text-orange-500" />
-                    <span className="text-6xl font-bold text-orange-600">{profile.current_streak}</span>
-                  </div>
-                  <p className="text-muted-foreground">
-                    {profile.current_streak === 1 ? 'dia consecutivo' : 'dias consecutivos'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="text-center p-4 bg-background/50 rounded-lg border">
-                  <p className="text-muted-foreground text-xs mb-2">Sequência Atual</p>
-                  <p className="font-bold text-2xl text-orange-600">{profile.current_streak}</p>
-                </div>
-                <div className="text-center p-4 bg-background/50 rounded-lg border">
-                  <p className="text-muted-foreground text-xs mb-2">Recorde</p>
-                  <p className="font-bold text-2xl text-orange-600">{profile.longest_streak}</p>
-                </div>
-              </div>
-
-              {profile.current_streak >= 7 && (
-                <div className="bg-orange-100 dark:bg-orange-950/30 p-4 rounded-lg text-center">
-                  <p className="text-orange-600 font-semibold">🔥 Você está em chamas!</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* XP Rewards Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-600" />
-              Como Ganhar XP
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <div className="flex items-start gap-3 p-4 border rounded-lg">
-                <Target className="w-5 h-5 text-purple-600 mt-1" />
-                <div>
-                  <p className="font-semibold mb-1">+10 XP</p>
-                  <p className="text-sm text-muted-foreground">Registrar uma transação</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 border rounded-lg">
-                <Trophy className="w-5 h-5 text-blue-600 mt-1" />
-                <div>
-                  <p className="font-semibold mb-1">+50 XP</p>
-                  <p className="text-sm text-muted-foreground">Ficar dentro do orçamento mensal</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 border rounded-lg">
-                <Flame className="w-5 h-5 text-orange-600 mt-1" />
-                <div>
-                  <p className="font-semibold mb-1">+200 XP</p>
-                  <p className="text-sm text-muted-foreground">Manter streak de 7 dias</p>
-                </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{profile.current_xp} XP</span>
+                <span>{xpForNextLevel} XP</span>
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                💡 <strong>Dica:</strong> Continue usando o FindUO diariamente para aumentar sua sequência e ganhar mais XP!
-              </p>
+            <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">XP Atual</p>
+                <p className="text-2xl font-bold">{profile.current_xp}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Total XP</p>
+                <p className="text-2xl font-bold">{profile.total_xp.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Próximo Nível</p>
+                <p className="text-2xl font-bold">{xpForNextLevel - profile.total_xp}</p>
+                <p className="text-xs text-muted-foreground">XP restantes</p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Level System Info */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Streak Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Flame className="h-5 w-5" />
+                <CardTitle>Sequência</CardTitle>
+              </div>
+              <CardDescription>Dias consecutivos de atividade</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-bold">{profile.current_streak}</span>
+                <span className="text-muted-foreground">{profile.current_streak === 1 ? 'dia' : 'dias'}</span>
+              </div>
+
+              <div className="flex items-center gap-4 pt-4 border-t text-sm">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Recorde:</span>
+                  <span className="font-semibold">{profile.longest_streak} dias</span>
+                </div>
+              </div>
+
+              {profile.current_streak >= 7 && (
+                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg text-sm">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="font-medium">Sequência incrível! Continue assim 🔥</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Stats Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                <CardTitle>Estatísticas</CardTitle>
+              </div>
+              <CardDescription>Resumo da sua jornada</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Nível atual</span>
+                  <span className="text-sm font-semibold">{profile.level}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Total de XP ganho</span>
+                  <span className="text-sm font-semibold">{profile.total_xp.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Maior sequência</span>
+                  <span className="text-sm font-semibold">{profile.longest_streak} dias</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Última atividade</span>
+                  <span className="text-sm font-semibold">
+                    {new Date(profile.last_activity_at).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* How to Earn XP */}
         <Card>
           <CardHeader>
-            <CardTitle>Sistema de Níveis</CardTitle>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              <CardTitle>Como Ganhar XP</CardTitle>
+            </div>
+            <CardDescription>Complete ações para subir de nível</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <LevelBadge level={1} levelName="Casal Iniciante" showName={true} />
-                <span className="text-sm text-muted-foreground">0 XP</span>
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Registrar transação</p>
+                  <p className="text-xs text-muted-foreground">Adicione receitas e despesas</p>
+                </div>
+                <span className="text-sm font-semibold">+10 XP</span>
               </div>
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <LevelBadge level={2} levelName="Casal Organizado" showName={true} />
-                <span className="text-sm text-muted-foreground">100 XP</span>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <Award className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Ficar dentro do orçamento</p>
+                  <p className="text-xs text-muted-foreground">Não ultrapasse seus limites mensais</p>
+                </div>
+                <span className="text-sm font-semibold">+50 XP</span>
               </div>
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <LevelBadge level={3} levelName="Casal Poupador" showName={true} />
-                <span className="text-sm text-muted-foreground">400 XP</span>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <Flame className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Manter sequência de 7 dias</p>
+                  <p className="text-xs text-muted-foreground">Use o app por uma semana consecutiva</p>
+                </div>
+                <span className="text-sm font-semibold">+200 XP</span>
               </div>
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <LevelBadge level={4} levelName="Casal Investidor" showName={true} />
-                <span className="text-sm text-muted-foreground">900 XP</span>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Economizar mais que o mês anterior</p>
+                  <p className="text-xs text-muted-foreground">Aumente suas reservas</p>
+                </div>
+                <span className="text-sm font-semibold">+100 XP</span>
               </div>
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <LevelBadge level={5} levelName="Casal Estrategista" showName={true} />
-                <span className="text-sm text-muted-foreground">1.600 XP</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <LevelBadge level={6} levelName="Casal Milionário" showName={true} />
-                <span className="text-sm text-muted-foreground">2.500+ XP</span>
-              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Level System */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5" />
+              <CardTitle>Sistema de Níveis</CardTitle>
+            </div>
+            <CardDescription>Evolua através dos níveis</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {[
+                { level: 1, name: 'Casal Iniciante', xp: '0 XP' },
+                { level: 2, name: 'Casal Organizado', xp: '100 XP' },
+                { level: 3, name: 'Casal Poupador', xp: '400 XP' },
+                { level: 4, name: 'Casal Investidor', xp: '900 XP' },
+                { level: 5, name: 'Casal Estrategista', xp: '1.600 XP' },
+                { level: 6, name: 'Casal Milionário', xp: '2.500+ XP' },
+              ].map((item) => (
+                <div
+                  key={item.level}
+                  className={`flex items-center justify-between p-3 rounded-lg border ${
+                    profile.level === item.level ? 'bg-muted border-primary' : 'bg-card'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <LevelBadge level={item.level} levelName={item.name} showName={false} size="sm" />
+                    <div>
+                      <p className="text-sm font-medium">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.xp}</p>
+                    </div>
+                  </div>
+                  {profile.level === item.level && (
+                    <span className="text-xs font-medium text-primary">Nível Atual</span>
+                  )}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

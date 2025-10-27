@@ -20,12 +20,12 @@ const getLevelIcon = (level: number) => {
 }
 
 const getLevelColor = (level: number) => {
-  if (level === 1) return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-  if (level === 2) return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-  if (level === 3) return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-  if (level === 4) return 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
-  if (level === 5) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
-  return 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
+  if (level === 1) return 'bg-muted text-muted-foreground'
+  if (level === 2) return 'bg-muted text-foreground'
+  if (level === 3) return 'bg-muted text-foreground'
+  if (level === 4) return 'bg-primary/10 text-primary border-primary/20'
+  if (level === 5) return 'bg-primary/20 text-primary border-primary/30'
+  return 'bg-primary text-primary-foreground'
 }
 
 const sizeClasses = {
