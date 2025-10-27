@@ -26,4 +26,8 @@ export const API_ROUTES = {
   LIST_CATEGORIES: '/categories',
   UPDATE_CATEGORY: (id: string) => `/categories/${id}`,
   DELETE_CATEGORY: (id: string) => `/categories/${id}`,
+
+  // Gamification
+  GET_GAME_PROFILE: '/gamification/profile',
+  AWARD_XP: '/gamification/profile/award-xp',
 } as const

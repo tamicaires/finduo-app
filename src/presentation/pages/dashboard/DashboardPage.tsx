@@ -5,6 +5,7 @@ import { StatCard } from '@presentation/components/dashboard/StatCard'
 import { MonthlyFlowChart } from '@presentation/components/dashboard/MonthlyFlowChart'
 import { ExpensesByCategoryChart } from '@presentation/components/dashboard/ExpensesByCategoryChart'
 import { RecentTransactions } from '@presentation/components/dashboard/RecentTransactions'
+import { GamificationCard } from '@presentation/components/gamification/GamificationCard'
 import {
   Wallet,
   TrendingUp,
@@ -157,6 +158,11 @@ export function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Gamification Card */}
+        <div className="mb-6">
+          <GamificationCard />
+        </div>
 
         {/* Recent Transactions */}
         {transactionsList.length > 0 && (
