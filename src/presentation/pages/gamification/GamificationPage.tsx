@@ -55,12 +55,11 @@ export function GamificationPage() {
           <h1 className="text-3xl font-bold tracking-tight">Progresso</h1>
           <p className="text-muted-foreground mt-1">
             Acompanhe seu nível, experiência e conquistas
+          </p>
         </div>
 
         {/* Couple Ranking */}
         <CoupleRankingCard />
-          </p>
-        </div>
 
         {/* Level & XP Card */}
         <Card>
