@@ -8,6 +8,7 @@ import {
   HelpCircle,
   Moon,
   Sun,
+  Gamepad2,
 } from 'lucide-react'
 import { useUIStore } from '@application/stores/ui.store'
 import { cn } from '@shared/utils'
@@ -16,6 +17,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Wallet, label: 'Contas', path: '/accounts' },
   { icon: ArrowLeftRight, label: 'Transações', path: '/transactions' },
+  { icon: Gamepad2, label: 'Gamificação', path: '/gamification' },
   { icon: Settings, label: 'Configurações', path: '/settings' },
 ]
 

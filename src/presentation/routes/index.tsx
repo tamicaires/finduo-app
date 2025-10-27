@@ -7,6 +7,7 @@ import { AccountsPage } from '@presentation/pages/accounts/AccountsPage'
 import { TransactionsPage } from '@presentation/pages/transactions/TransactionsPage'
 import { CoupleManagementPage } from '@presentation/pages/couple/CoupleManagementPage'
 import { SettingsPage } from '@presentation/pages/settings/SettingsPage'
+import { GamificationPage } from '@presentation/pages/gamification/GamificationPage'
 
 export const router = createBrowserRouter([
   {
@@ -63,6 +64,16 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <AppLayout>
           <SettingsPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/gamification',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <GamificationPage />
         </AppLayout>
       </PrivateRoute>
     ),
