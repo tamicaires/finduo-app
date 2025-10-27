@@ -5,6 +5,7 @@ export const API_ROUTES = {
 
   // Couple
   CREATE_COUPLE: '/couple',
+  GET_COUPLE_INFO: '/couple/info',
   GET_DASHBOARD: '/couple/dashboard',
   UPDATE_FREE_SPENDING: '/couple/free-spending',
 

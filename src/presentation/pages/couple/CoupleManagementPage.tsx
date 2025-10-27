@@ -36,7 +36,7 @@ export function CoupleManagementPage() {
   const fetchCoupleInfo = async () => {
     try {
       setIsLoading(true)
-      const response = await apiClient.get<CoupleInfo>(`${API_ROUTES.REGISTER_COUPLE}/info`)
+      const response = await apiClient.get<CoupleInfo>(API_ROUTES.GET_COUPLE_INFO)
       setCoupleInfo(response.data)
     } catch (err) {
       setError('Erro ao carregar informações do casal')
