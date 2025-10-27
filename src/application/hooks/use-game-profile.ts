@@ -31,9 +31,10 @@ export function useGameProfile() {
       setError(null)
       const response = await apiClient.get<GameProfile>(API_ROUTES.GET_GAME_PROFILE)
       setGameProfile(response.data)
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching game profile:', err)
-      setError('Erro ao carregar perfil de gamificação')
+      const errorMessage = err?.response?.data?.message || err?.message || 'Erro desconhecido'
+      setError(`Erro ao carregar perfil: ${errorMessage}`)
     } finally {
       setIsLoading(false)
     }
