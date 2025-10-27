@@ -14,14 +14,35 @@ export interface RegisterTransactionDto {
   is_free_spending?: boolean
 }
 
+export interface TransactionFiltersDto {
+  type?: TransactionType
+  category?: TransactionCategory
+  account_id?: string
+  start_date?: string
+  end_date?: string
+  search?: string
+}
+
 interface ListTransactionsResponse {
   transactions: Transaction[]
   nextCursor: string | null
 }
 
 export const transactionRepository = {
-  async list(): Promise<Transaction[]> {
-    const response = await apiClient.get<ListTransactionsResponse>(API_ROUTES.LIST_TRANSACTIONS)
+  async list(filters?: TransactionFiltersDto): Promise<Transaction[]> {
+    const params = new URLSearchParams()
+
+    if (filters?.type) params.append('type', filters.type)
+    if (filters?.category) params.append('category', filters.category)
+    if (filters?.account_id) params.append('account_id', filters.account_id)
+    if (filters?.start_date) params.append('start_date', filters.start_date)
+    if (filters?.end_date) params.append('end_date', filters.end_date)
+    if (filters?.search) params.append('search', filters.search)
+
+    const queryString = params.toString()
+    const url = queryString ? `${API_ROUTES.LIST_TRANSACTIONS}?${queryString}` : API_ROUTES.LIST_TRANSACTIONS
+
+    const response = await apiClient.get<ListTransactionsResponse>(url)
     return response.data.transactions
   },
 

@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { transactionRepository } from '@infrastructure/repositories/transaction.repository'
-import type { RegisterTransactionDto } from '@infrastructure/repositories/transaction.repository'
+import type { RegisterTransactionDto, TransactionFiltersDto } from '@infrastructure/repositories/transaction.repository'
 import { QUERY_KEYS } from '@shared/constants/app-config'
 
-export function useTransactions() {
+export function useTransactions(filters?: TransactionFiltersDto) {
   const queryClient = useQueryClient()
 
   const {
@@ -12,8 +12,8 @@ export function useTransactions() {
     error,
     refetch,
   } = useQuery({
-    queryKey: [QUERY_KEYS.TRANSACTIONS],
-    queryFn: () => transactionRepository.list(),
+    queryKey: [QUERY_KEYS.TRANSACTIONS, filters],
+    queryFn: () => transactionRepository.list(filters),
   })
 
   const registerMutation = useMutation({

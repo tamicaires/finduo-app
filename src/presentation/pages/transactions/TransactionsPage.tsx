@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { HiPlus, HiTrash, HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
-import { BiFilterAlt } from 'react-icons/bi'
-import { MdCalendarToday } from 'react-icons/md'
 import { toast } from 'sonner'
 import { useTransactions } from '@application/hooks/use-transactions'
 import { useAccounts } from '@application/hooks/use-accounts'
@@ -9,13 +7,26 @@ import { Button } from '@presentation/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { TransactionFormDialog } from '@presentation/components/transactions/TransactionFormDialog'
+import { TransactionFilters, type TransactionFiltersState } from '@presentation/components/transactions/TransactionFilters'
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import { TransactionCategoryLabels } from '@core/enums/TransactionCategory'
 import { formatCurrency } from '@shared/utils/format-currency'
-import type { RegisterTransactionDto } from '@infrastructure/repositories/transaction.repository'
+import type { RegisterTransactionDto, TransactionFiltersDto } from '@infrastructure/repositories/transaction.repository'
 
 export function TransactionsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [filters, setFilters] = useState<TransactionFiltersState>({})
+
+  // Convert local filters to API format
+  const apiFilters: TransactionFiltersDto | undefined = Object.keys(filters).length > 0
+    ? {
+        type: filters.type,
+        category: filters.category,
+        search: filters.search,
+        start_date: filters.startDate,
+        end_date: filters.endDate,
+      }
+    : undefined
 
   const {
     transactions,
@@ -24,7 +35,7 @@ export function TransactionsPage() {
     deleteTransaction,
     isRegistering,
     isDeleting,
-  } = useTransactions()
+  } = useTransactions(apiFilters)
 
   const { accounts } = useAccounts()
 
@@ -103,17 +114,11 @@ export function TransactionsPage() {
             </Button>
           </div>
 
-          {/* Filtros - Mobile */}
-          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-            <button className="flex items-center gap-2 px-3 md:px-4 py-2 bg-card border border-border rounded-lg text-xs md:text-sm whitespace-nowrap hover:bg-secondary transition-colors">
-              <MdCalendarToday className="h-4 w-4" />
-              Este mês
-            </button>
-            <button className="flex items-center gap-2 px-3 md:px-4 py-2 bg-card border border-border rounded-lg text-xs md:text-sm whitespace-nowrap hover:bg-secondary transition-colors">
-              <BiFilterAlt className="h-4 w-4" />
-              Filtrar
-            </button>
-          </div>
+          {/* Filtros */}
+          <TransactionFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+          />
         </div>
 
         {/* Cards de Resumo - Mobile otimizado */}
