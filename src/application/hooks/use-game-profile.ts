@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { apiClient } from '@/lib/api-client'
+import { apiClient } from '@infrastructure/http/api-client'
 import { API_ROUTES } from '@shared/constants/api-routes'
 
 interface GameProfile {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Trash2, Plus, Edit2, X } from 'lucide-react'
+import { Trash2, Plus } from 'lucide-react'
 import { apiClient } from '@infrastructure/http/api-client'
 import { API_ROUTES } from '@shared/constants/api-routes'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@presentation/components/ui/card'
@@ -22,7 +22,6 @@ export function CategoriesManager() {
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
 
   // Form states
   const [formName, setFormName] = useState('')

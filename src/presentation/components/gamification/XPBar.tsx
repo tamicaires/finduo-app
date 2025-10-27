@@ -12,7 +12,6 @@ interface XPBarProps {
 }
 
 export function XPBar({
-  currentXp,
   totalXp,
   level,
   xpForNextLevel,
