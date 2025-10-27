@@ -4,32 +4,42 @@ import {
   Wallet,
   ArrowLeftRight,
   Settings,
-  Shield,
-  HelpCircle,
   Moon,
   Sun,
+  Users,
   Gamepad2,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 import { useUIStore } from '@application/stores/ui.store'
 import { cn } from '@shared/utils'
+import { useState } from 'react'
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Wallet, label: 'Contas', path: '/accounts' },
   { icon: ArrowLeftRight, label: 'Transações', path: '/transactions' },
-  { icon: Gamepad2, label: 'Gamificação', path: '/gamification' },
-  { icon: Settings, label: 'Configurações', path: '/settings' },
+]
+
+const coupleMenuItems = [
+  { icon: Users, label: 'Gestão do Casal', path: '/couple' },
+  { icon: Gamepad2, label: 'Progresso & Ranking', path: '/gamification' },
 ]
 
 const bottomItems = [
-  { icon: Shield, label: 'Segurança', path: '/security' },
-  { icon: HelpCircle, label: 'Ajuda', path: '/help' },
+  { icon: Settings, label: 'Configurações', path: '/settings' },
 ]
 
 export function Sidebar() {
   const location = useLocation()
   const { theme, toggleTheme } = useUIStore()
   const isDarkMode = theme === 'dark'
+
+  // Abrir automaticamente se alguma rota do casal está ativa
+  const isCoupleRouteActive = ['/couple', '/gamification'].some(path =>
+    location.pathname.startsWith(path)
+  )
+  const [isCoupleMenuOpen, setIsCoupleMenuOpen] = useState(isCoupleRouteActive)
 
   return (
     <aside className="w-64 h-screen bg-card border-r border-border flex flex-col">
@@ -62,32 +72,80 @@ export function Sidebar() {
               </Link>
             )
           })}
+
+          {/* Casal Menu Group */}
+          <div className="space-y-1">
+            <button
+              onClick={() => setIsCoupleMenuOpen(!isCoupleMenuOpen)}
+              className={cn(
+                'flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                isCoupleRouteActive
+                  ? 'text-foreground bg-accent'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Users className="h-5 w-5" />
+                <span>Casal</span>
+              </div>
+              {isCoupleMenuOpen ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </button>
+
+            {isCoupleMenuOpen && (
+              <div className="ml-4 pl-3 border-l border-border space-y-1">
+                {coupleMenuItems.map((item) => {
+                  const Icon = item.icon
+                  const isActive = location.pathname === item.path
+
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                        isActive
+                          ? 'bg-primary text-primary-foreground font-medium'
+                          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {bottomItems.map((item) => {
+            const Icon = item.icon
+            const isActive = location.pathname === item.path
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                {item.label}
+              </Link>
+            )
+          })}
         </div>
       </nav>
 
       {/* Menu Inferior */}
       <div className="p-3 space-y-1 border-t border-border">
-        {bottomItems.map((item) => {
-          const Icon = item.icon
-          const isActive = location.pathname === item.path
-
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )}
-            >
-              <Icon className="h-5 w-5" />
-              {item.label}
-            </Link>
-          )
-        })}
-
         {/* Dark Mode Toggle */}
         <button
           onClick={toggleTheme}
