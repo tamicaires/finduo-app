@@ -34,6 +34,15 @@ export function useTransactions(filters?: TransactionFiltersDto) {
     },
   })
 
+  const updateFreeSpendingMutation = useMutation({
+    mutationFn: ({ id, is_free_spending }: { id: string; is_free_spending: boolean }) =>
+      transactionRepository.updateFreeSpending(id, is_free_spending),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DASHBOARD] })
+    },
+  })
+
   return {
     transactions,
     isLoading,
@@ -41,8 +50,10 @@ export function useTransactions(filters?: TransactionFiltersDto) {
     refetch,
     registerTransaction: registerMutation.mutate,
     deleteTransaction: deleteMutation.mutate,
+    updateFreeSpending: updateFreeSpendingMutation.mutate,
     isRegistering: registerMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isUpdatingFreeSpending: updateFreeSpendingMutation.isPending,
     registerError: registerMutation.error,
     deleteError: deleteMutation.error,
   }

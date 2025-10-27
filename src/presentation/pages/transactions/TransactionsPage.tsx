@@ -5,6 +5,7 @@ import { useTransactions } from '@application/hooks/use-transactions'
 import { useAccounts } from '@application/hooks/use-accounts'
 import { Button } from '@presentation/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
+import { Switch } from '@presentation/components/ui/switch'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { TransactionFormDialog } from '@presentation/components/transactions/TransactionFormDialog'
 import { TransactionFilters, type TransactionFiltersState } from '@presentation/components/transactions/TransactionFilters'
@@ -33,8 +34,10 @@ export function TransactionsPage() {
     isLoading,
     registerTransaction,
     deleteTransaction,
+    updateFreeSpending,
     isRegistering,
     isDeleting,
+    isUpdatingFreeSpending,
   } = useTransactions(apiFilters)
 
   const { accounts } = useAccounts()
@@ -68,6 +71,24 @@ export function TransactionsPage() {
     }
   }
 
+  const handleToggleFreeSpending = (id: string, currentValue: boolean) => {
+    updateFreeSpending(
+      { id, is_free_spending: !currentValue },
+      {
+        onSuccess: () => {
+          toast.success(
+            !currentValue
+              ? 'Transação marcada como gasto livre!'
+              : 'Transação desmarcada como gasto livre!'
+          )
+        },
+        onError: () => {
+          toast.error('Erro ao atualizar transação')
+        },
+      }
+    )
+  }
+
   const formatDate = (date: Date | string) => {
     const d = new Date(date)
     return d.toLocaleDateString('pt-BR')
@@ -90,6 +111,14 @@ export function TransactionsPage() {
   const totalExpenses = transactionsList
     .filter((t) => t.type === TransactionType.EXPENSE)
     .reduce((sum, t) => sum + t.amount, 0)
+
+  const totalFreeSpending = transactionsList
+    .filter((t) => t.type === TransactionType.EXPENSE && t.is_free_spending)
+    .reduce((sum, t) => sum + t.amount, 0)
+
+  const freeSpendingCount = transactionsList.filter(
+    (t) => t.type === TransactionType.EXPENSE && t.is_free_spending
+  ).length
 
   return (
     <div className="p-4 md:p-6">
@@ -122,7 +151,7 @@ export function TransactionsPage() {
         </div>
 
         {/* Cards de Resumo - Mobile otimizado */}
-        <div className="mb-4 md:mb-6 grid gap-3 md:gap-4 grid-cols-2">
+        <div className="mb-4 md:mb-6 grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-3">
           <Card className="border-green-500/20 bg-green-500/5">
             <CardHeader className="pb-2 md:pb-3">
               <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1 md:gap-2">
@@ -147,6 +176,23 @@ export function TransactionsPage() {
             <CardContent>
               <p className="text-lg md:text-3xl font-bold text-red-600">
                 {formatCurrency(totalExpenses)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-orange-500/20 bg-orange-500/5 col-span-2 lg:col-span-1">
+            <CardHeader className="pb-2 md:pb-3">
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1 md:gap-2">
+                <HiTrendingDown className="h-3 w-3 md:h-4 md:w-4 text-orange-600" />
+                Gastos Livres
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg md:text-3xl font-bold text-orange-600">
+                {formatCurrency(totalFreeSpending)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {freeSpendingCount} {freeSpendingCount === 1 ? 'transação' : 'transações'}
               </p>
             </CardContent>
           </Card>
@@ -186,9 +232,16 @@ export function TransactionsPage() {
 
                         {/* Descrição e Detalhes */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-xs md:text-sm truncate">
-                            {transaction.description || TransactionCategoryLabels[transaction.category]}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-xs md:text-sm truncate">
+                              {transaction.description || TransactionCategoryLabels[transaction.category]}
+                            </p>
+                            {transaction.is_free_spending && transaction.type === TransactionType.EXPENSE && (
+                              <span className="text-[10px] md:text-xs px-1.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 whitespace-nowrap">
+                                Gasto Livre
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-1 md:gap-2 text-xs text-muted-foreground mt-0.5">
                             <span className="truncate">{formatDate(transaction.transaction_date)}</span>
                             <span className="hidden sm:inline">•</span>
@@ -213,6 +266,18 @@ export function TransactionsPage() {
                             {TransactionTypeLabels[transaction.type]}
                           </p>
                         </div>
+
+                        {/* Free Spending Toggle - Apenas para despesas */}
+                        {transaction.type === TransactionType.EXPENSE && (
+                          <div className="flex items-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                            <Switch
+                              checked={transaction.is_free_spending}
+                              onCheckedChange={() => handleToggleFreeSpending(transaction.id, transaction.is_free_spending)}
+                              disabled={isUpdatingFreeSpending}
+                              className="scale-75 md:scale-100"
+                            />
+                          </div>
+                        )}
 
                         {/* Botão Deletar - Mobile sempre visível, Desktop hover */}
                         <div className="md:opacity-0 md:group-hover:opacity-100 transition-opacity">

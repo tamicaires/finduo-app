@@ -57,4 +57,10 @@ export const transactionRepository = {
   async delete(id: string): Promise<void> {
     await apiClient.delete(API_ROUTES.DELETE_TRANSACTION(id))
   },
+
+  async updateFreeSpending(id: string, is_free_spending: boolean): Promise<void> {
+    await apiClient.patch(`${API_ROUTES.REGISTER_TRANSACTION}/${id}/free-spending`, {
+      is_free_spending,
+    })
+  },
 }
