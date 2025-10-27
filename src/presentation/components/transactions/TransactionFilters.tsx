@@ -146,11 +146,11 @@ export function TransactionFilters({
             <div className="space-y-2">
               <label className="text-sm font-medium">Tipo</label>
               <Select
-                value={localFilters.type || ''}
+                value={localFilters.type || 'all'}
                 onValueChange={(value) =>
                   setLocalFilters({
                     ...localFilters,
-                    type: value ? (value as TransactionType) : undefined,
+                    type: value === 'all' ? undefined : (value as TransactionType),
                   })
                 }
               >
@@ -158,7 +158,7 @@ export function TransactionFilters({
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value={TransactionType.INCOME}>Receita</SelectItem>
                   <SelectItem value={TransactionType.EXPENSE}>Despesa</SelectItem>
                 </SelectContent>
@@ -169,11 +169,11 @@ export function TransactionFilters({
             <div className="space-y-2">
               <label className="text-sm font-medium">Categoria</label>
               <Select
-                value={localFilters.category || ''}
+                value={localFilters.category || 'all'}
                 onValueChange={(value) =>
                   setLocalFilters({
                     ...localFilters,
-                    category: value ? (value as TransactionCategory) : undefined,
+                    category: value === 'all' ? undefined : (value as TransactionCategory),
                   })
                 }
               >
@@ -181,7 +181,7 @@ export function TransactionFilters({
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   {Object.entries(TransactionCategoryLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
                       {label}
