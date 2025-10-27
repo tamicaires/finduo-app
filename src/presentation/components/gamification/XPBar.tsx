@@ -1,4 +1,4 @@
-import { Progress } from '@/components/ui/progress'
+import { Progress } from '@presentation/components/ui/progress'
 import { cn } from '@/lib/utils'
 
 interface XPBarProps {

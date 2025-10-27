@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@presentation/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { Trophy, Star, Sparkles, Award, Crown, Gem } from 'lucide-react'
 

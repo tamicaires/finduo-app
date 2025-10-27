@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
 import { XPBar } from './XPBar'
 import { LevelBadge } from './LevelBadge'
 import { useGameProfile } from '@application/hooks/use-game-profile'
