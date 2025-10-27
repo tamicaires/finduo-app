@@ -20,4 +20,10 @@ export const API_ROUTES = {
   REGISTER_TRANSACTION: '/transactions',
   LIST_TRANSACTIONS: '/transactions',
   DELETE_TRANSACTION: (id: string) => `/transactions/${id}`,
+
+  // Categories
+  CREATE_CATEGORY: '/categories',
+  LIST_CATEGORIES: '/categories',
+  UPDATE_CATEGORY: (id: string) => `/categories/${id}`,
+  DELETE_CATEGORY: (id: string) => `/categories/${id}`,
 } as const

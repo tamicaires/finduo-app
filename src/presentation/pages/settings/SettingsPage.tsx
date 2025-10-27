@@ -7,6 +7,7 @@ import { Button } from '@presentation/components/ui/button'
 import { Label } from '@presentation/components/ui/label'
 import { Input } from '@presentation/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@presentation/components/ui/select'
+import { CategoriesManager } from '@presentation/components/categories/CategoriesManager'
 
 interface CoupleInfo {
   couple: {
@@ -235,6 +236,9 @@ export function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Gerenciamento de Categorias */}
+          <CategoriesManager />
         </div>
       </div>
     </div>
