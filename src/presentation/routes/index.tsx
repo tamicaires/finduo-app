@@ -8,6 +8,8 @@ import { TransactionsPage } from '@presentation/pages/transactions/TransactionsP
 import { CoupleManagementPage } from '@presentation/pages/couple/CoupleManagementPage'
 import { SettingsPage } from '@presentation/pages/settings/SettingsPage'
 import { GamificationPage } from '@presentation/pages/gamification/GamificationPage'
+import { AchievementsPage } from '@presentation/pages/achievements/AchievementsPage'
+import { BillingPage } from '@presentation/pages/billing/BillingPage'
 
 export const router = createBrowserRouter([
   {
@@ -74,6 +76,26 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <AppLayout>
           <GamificationPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/achievements',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <AchievementsPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/billing',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <BillingPage />
         </AppLayout>
       </PrivateRoute>
     ),
