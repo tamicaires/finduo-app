@@ -3,11 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signInSchema, type SignInInput } from '@infrastructure/validators/auth.schema'
 import { useAuth } from '@application/hooks/use-auth'
 import { Button } from '@presentation/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@presentation/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@presentation/components/ui/card'
 import { Form } from '@presentation/components/ui/form'
 import { InputField } from '@presentation/components/form'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { ErrorMessage } from '@presentation/components/shared/ErrorMessage'
+import { Logo } from '@presentation/components/ui/logo'
 
 export function LoginPage() {
   const { signIn, isSigningIn, signInError } = useAuth()
@@ -25,10 +26,12 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 dark:from-zinc-900 dark:to-zinc-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-bold text-center">FINDUO</CardTitle>
+        <CardHeader className="space-y-3">
+          <div className="flex justify-center">
+            <Logo width={240} />
+          </div>
           <CardDescription className="text-center">
             Gestão financeira para casais
           </CardDescription>
