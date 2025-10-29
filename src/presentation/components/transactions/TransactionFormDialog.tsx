@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useQuery } from '@tanstack/react-query'
 import { MdSwapHoriz, MdAccountBalanceWallet, MdSwapVert, MdAttachMoney, MdLabel, MdCalendarToday, MdDescription } from 'react-icons/md'
 import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
 import { Button } from '@presentation/components/ui/button'
@@ -11,8 +12,9 @@ import { SwitchField } from '@presentation/components/form/SwitchField'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
-import { TransactionCategory, TransactionCategoryLabels } from '@core/enums/TransactionCategory'
 import type { Account } from '@core/entities/Account'
+import { categoryService } from '@/application/services/category.service'
+import { getIconComponent } from '@/shared/utils/icon-mapper'
 
 const transactionSchema = z.object({
   account_id: z.string().min(1, 'Conta é obrigatória'),
@@ -20,9 +22,7 @@ const transactionSchema = z.object({
     message: 'Tipo é obrigatório'
   }),
   amount: z.number().positive('Valor deve ser maior que zero'),
-  category: z.nativeEnum(TransactionCategory, {
-    message: 'Categoria é obrigatória'
-  }),
+  category_id: z.string().optional(),
   description: z.string().optional(),
   transaction_date: z.string().optional(),
   is_free_spending: z.boolean().default(false),
@@ -37,7 +37,7 @@ interface TransactionFormDialogProps {
     account_id: string
     type: TransactionType
     amount: number
-    category: TransactionCategory
+    category_id?: string
     description?: string
     transaction_date?: string
     is_free_spending?: boolean
@@ -59,11 +59,19 @@ export function TransactionFormDialog({
       account_id: '',
       type: TransactionType.EXPENSE,
       amount: 0,
-      category: TransactionCategory.OTHER,
+      category_id: '',
       description: '',
       transaction_date: new Date().toISOString().split('T')[0],
       is_free_spending: false,
     },
+  })
+
+  const selectedType = form.watch('type')
+
+  // Buscar categorias do backend
+  const { data: categories, isLoading: loadingCategories } = useQuery({
+    queryKey: ['categories', selectedType],
+    queryFn: () => categoryService.getAll(selectedType),
   })
 
   const handleSubmit = (data: TransactionFormData) => {
@@ -71,7 +79,7 @@ export function TransactionFormDialog({
       account_id: data.account_id,
       type: data.type,
       amount: data.amount,
-      category: data.category,
+      category_id: data.category_id || undefined,
       description: data.description || undefined,
       transaction_date: data.transaction_date,
       is_free_spending: data.is_free_spending,
@@ -83,9 +91,10 @@ export function TransactionFormDialog({
     label,
   }))
 
-  const categoryOptions = Object.entries(TransactionCategoryLabels).map(([value, label]) => ({
-    value,
-    label,
+  const categoryOptions = (categories || []).map((category) => ({
+    value: category.id,
+    label: category.name,
+    icon: getIconComponent(category.icon) || undefined,
   }))
 
   const accountOptions = (Array.isArray(accounts) ? accounts : []).map((account) => ({
@@ -135,13 +144,13 @@ export function TransactionFormDialog({
               />
 
               <SelectField
-                name="category"
+                name="category_id"
                 label="Categoria"
-                placeholder="Selecione a categoria"
+                placeholder={loadingCategories ? "Carregando..." : "Selecione a categoria"}
                 options={categoryOptions}
                 icon={MdLabel}
                 searchable
-                required
+                disabled={loadingCategories}
               />
 
               <InputField

@@ -31,4 +31,10 @@ export const API_ROUTES = {
   GET_GAME_PROFILE: '/gamification/profile',
   GET_COUPLE_RANKING: '/gamification/profile/couple-ranking',
   AWARD_XP: '/gamification/profile/award-xp',
+  GET_ACHIEVEMENTS: '/achievements',
+
+  // Subscription
+  SUBSCRIPTION_STATUS: '/subscription/status',
+  SUBSCRIPTION_CHECKOUT: '/subscription/checkout',
+  SUBSCRIPTION_PORTAL: '/subscription/portal',
 } as const
