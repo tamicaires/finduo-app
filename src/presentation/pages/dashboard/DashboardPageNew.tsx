@@ -14,6 +14,18 @@ import { TransactionCategoryLabels } from '@core/enums/TransactionCategory'
 import { formatCurrency } from '@shared/utils/format-currency'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+
+// Helper para pegar nome da categoria (objeto Category ou enum TransactionCategory)
+function getCategoryName(category: any): string {
+  if (!category) return 'Sem categoria'
+  if (typeof category === 'object' && 'name' in category) {
+    return category.name
+  }
+  if (typeof category === 'string' && category in TransactionCategoryLabels) {
+    return TransactionCategoryLabels[category as keyof typeof TransactionCategoryLabels]
+  }
+  return 'Sem categoria'
+}
 import {
   BarChart,
   Bar,
@@ -54,7 +66,7 @@ export function DashboardPageNew() {
   const categoryTotals = transactionsList
     .filter(t => t.type === TransactionType.EXPENSE)
     .reduce((acc, t) => {
-      const category = TransactionCategoryLabels[t.category]
+      const category = getCategoryName(t.category)
       if (!acc[category]) acc[category] = 0
       acc[category] += t.amount
       return acc
@@ -269,7 +281,7 @@ export function DashboardPageNew() {
                         <BsCreditCard2Front className="text-lg text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium text-sm">{TransactionCategoryLabels[tx.category]}</p>
+                        <p className="font-medium text-sm">{tx.description || getCategoryName(tx.category)}</p>
                         <p className="text-xs text-muted-foreground">
                           {format(new Date(tx.transaction_date), "dd MMM yyyy", { locale: ptBR })}
                         </p>
@@ -309,7 +321,7 @@ export function DashboardPageNew() {
                           <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
                             <BsCreditCard2Front className="text-lg text-primary" />
                           </div>
-                          <span className="font-medium">{TransactionCategoryLabels[tx.category]}</span>
+                          <span className="font-medium">{tx.description || getCategoryName(tx.category)}</span>
                         </div>
                       </td>
                       <td className="py-4 text-muted-foreground text-sm">
