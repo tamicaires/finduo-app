@@ -9,6 +9,7 @@ export const API_ROUTES = {
   GET_DASHBOARD: '/couple/dashboard',
   UPDATE_FREE_SPENDING: '/couple/free-spending',
   UPDATE_COUPLE_SETTINGS: '/couple/settings',
+  UPDATE_COUPLE_FINANCIAL_MODEL: '/couple/financial-model',
 
   // Accounts
   CREATE_ACCOUNT: '/accounts',
