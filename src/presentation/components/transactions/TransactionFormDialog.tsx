@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { MdSwapHoriz, MdAccountBalanceWallet, MdSwapVert, MdAttachMoney, MdLabel, MdCalendarToday, MdDescription } from 'react-icons/md'
+import { MdSwapHoriz, MdAccountBalanceWallet, MdSwapVert, MdAttachMoney, MdLabel, MdCalendarToday, MdDescription, MdVisibilityOff, MdPeople, MdInfo } from 'react-icons/md'
 import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
@@ -11,10 +11,14 @@ import { SelectField } from '@presentation/components/form/SelectField'
 import { SwitchField } from '@presentation/components/form/SwitchField'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
+import { Alert, AlertDescription } from '@presentation/components/ui/alert'
+import { Label } from '@presentation/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@presentation/components/ui/radio-group'
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import type { Account } from '@core/entities/Account'
 import { categoryService } from '@/application/services/category.service'
 import { getIconComponent } from '@/shared/utils/icon-mapper'
+import { useDashboard } from '@application/hooks/use-dashboard'
 
 const transactionSchema = z.object({
   account_id: z.string().min(1, 'Conta é obrigatória'),
@@ -26,6 +30,7 @@ const transactionSchema = z.object({
   description: z.string().optional(),
   transaction_date: z.string().optional(),
   is_free_spending: z.boolean().default(false),
+  visibility: z.enum(['SHARED', 'FREE_SPENDING', 'PRIVATE']).default('SHARED'),
 })
 
 type TransactionFormData = z.infer<typeof transactionSchema>
@@ -41,6 +46,7 @@ interface TransactionFormDialogProps {
     description?: string
     transaction_date?: string
     is_free_spending?: boolean
+    visibility?: string
   }) => void
   accounts?: Account[]
   isLoading?: boolean
@@ -53,6 +59,8 @@ export function TransactionFormDialog({
   accounts,
   isLoading,
 }: TransactionFormDialogProps) {
+  const { dashboardData } = useDashboard()
+
   const form = useForm({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
@@ -63,10 +71,12 @@ export function TransactionFormDialog({
       description: '',
       transaction_date: new Date().toISOString().split('T')[0],
       is_free_spending: false,
+      visibility: 'SHARED' as const,
     },
   })
 
   const selectedType = form.watch('type')
+  const isFreeSpending = form.watch('is_free_spending')
 
   // Buscar categorias do backend
   const { data: categories, isLoading: loadingCategories } = useQuery({
@@ -75,6 +85,9 @@ export function TransactionFormDialog({
   })
 
   const handleSubmit = (data: TransactionFormData) => {
+    // Se is_free_spending estiver marcado, a visibilidade deve ser FREE_SPENDING
+    const visibility = data.is_free_spending ? 'FREE_SPENDING' : data.visibility
+
     onSubmit({
       account_id: data.account_id,
       type: data.type,
@@ -83,6 +96,7 @@ export function TransactionFormDialog({
       description: data.description || undefined,
       transaction_date: data.transaction_date,
       is_free_spending: data.is_free_spending,
+      visibility,
     })
   }
 
@@ -101,6 +115,8 @@ export function TransactionFormDialog({
     value: account.id,
     label: account.name,
   }))
+
+  const allowPrivateTransactions = dashboardData?.couple?.allow_private_transactions ?? false
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -175,6 +191,45 @@ export function TransactionFormDialog({
               description="Este gasto será contabilizado como gasto livre pessoal"
               tooltipMessage="Gastos livres são despesas pessoais que não afetam o orçamento compartilhado do casal. Cada parceiro tem um limite mensal definido para gastos livres."
             />
+
+            {/* Visibilidade da Transação */}
+            {!isFreeSpending && (
+              <div className="space-y-3">
+                <Label>Visibilidade da Transação</Label>
+                {allowPrivateTransactions ? (
+                  <RadioGroup
+                    value={form.watch('visibility')}
+                    onValueChange={(value) => form.setValue('visibility', value as 'SHARED' | 'PRIVATE')}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="SHARED" id="shared" />
+                      <Label htmlFor="shared" className="font-normal cursor-pointer flex items-center gap-2">
+                        <MdPeople className="h-4 w-4" />
+                        Compartilhada (ambos podem ver)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="PRIVATE" id="private" />
+                      <Label htmlFor="private" className="font-normal cursor-pointer flex items-center gap-2">
+                        <MdVisibilityOff className="h-4 w-4" />
+                        Privada (apenas você pode ver)
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                ) : (
+                  <>
+                    <Alert>
+                      <MdInfo className="h-4 w-4" />
+                      <AlertDescription className="text-sm">
+                        Transações privadas não estão disponíveis no seu modelo financeiro atual.
+                      </AlertDescription>
+                    </Alert>
+                    <input type="hidden" {...form.register('visibility')} value="SHARED" />
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="flex justify-end gap-3 pt-4">
               <Button
