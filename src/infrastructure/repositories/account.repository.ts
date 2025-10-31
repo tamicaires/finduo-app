@@ -7,6 +7,7 @@ export interface CreateAccountDto {
   name: string
   type: AccountType
   initial_balance: number
+  owner_id?: string
 }
 
 export interface UpdateAccountDto {

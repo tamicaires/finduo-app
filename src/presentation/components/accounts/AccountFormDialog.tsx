@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { MdAccountBalanceWallet, MdCreditCard, MdAttachMoney } from 'react-icons/md'
+import { MdAccountBalanceWallet, MdCreditCard, MdAttachMoney, MdPeople, MdPerson, MdInfo } from 'react-icons/md'
 import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
@@ -10,7 +10,12 @@ import { InputField } from '@presentation/components/form/InputField'
 import { SelectField } from '@presentation/components/form/SelectField'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
+import { Alert, AlertDescription } from '@presentation/components/ui/alert'
+import { Label } from '@presentation/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@presentation/components/ui/radio-group'
 import { AccountType, AccountTypeLabels } from '@core/enums/AccountType'
+import { useDashboard } from '@application/hooks/use-dashboard'
+import { useAuth } from '@application/hooks/use-auth'
 import type { Account } from '@core/entities/Account'
 
 const accountSchema = z.object({
@@ -19,6 +24,7 @@ const accountSchema = z.object({
     message: 'Tipo é obrigatório'
   }),
   initial_balance: z.string().min(1, 'Saldo inicial é obrigatório'),
+  ownership: z.enum(['joint', 'personal']),
 })
 
 type AccountFormData = z.infer<typeof accountSchema>
@@ -26,7 +32,7 @@ type AccountFormData = z.infer<typeof accountSchema>
 interface AccountFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: { name: string; type: AccountType; initial_balance: number }) => void
+  onSubmit: (data: { name: string; type: AccountType; initial_balance: number; owner_id?: string }) => void
   account?: Account
   isLoading?: boolean
 }
@@ -38,12 +44,16 @@ export function AccountFormDialog({
   account,
   isLoading,
 }: AccountFormDialogProps) {
+  const { dashboardData } = useDashboard()
+  const { user } = useAuth()
+
   const form = useForm<AccountFormData>({
     resolver: zodResolver(accountSchema),
     defaultValues: {
       name: '',
       type: AccountType.CHECKING,
       initial_balance: '0',
+      ownership: 'joint',
     },
   })
 
@@ -53,21 +63,26 @@ export function AccountFormDialog({
         name: account.name,
         type: account.type,
         initial_balance: account.balance.toString(),
+        ownership: account.owner_id ? 'personal' : 'joint',
       })
     } else {
       form.reset({
         name: '',
         type: AccountType.CHECKING,
         initial_balance: '0',
+        ownership: 'joint',
       })
     }
   }, [account, form])
 
   const handleSubmit = (data: AccountFormData) => {
+    const owner_id = data.ownership === 'personal' ? user?.id : undefined
+
     onSubmit({
       name: data.name,
       type: data.type,
       initial_balance: parseFloat(data.initial_balance),
+      owner_id,
     })
   }
 
@@ -75,6 +90,8 @@ export function AccountFormDialog({
     value,
     label,
   }))
+
+  const allowPersonalAccounts = dashboardData?.couple?.allow_personal_accounts ?? false
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,6 +125,43 @@ export function AccountFormDialog({
               icon={MdCreditCard}
               required
             />
+
+            {/* Ownership Selection */}
+            <div className="space-y-3">
+              <Label>Titularidade da Conta</Label>
+              {allowPersonalAccounts ? (
+                <RadioGroup
+                  value={form.watch('ownership')}
+                  onValueChange={(value) => form.setValue('ownership', value as 'joint' | 'personal')}
+                  className="space-y-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="joint" id="joint" />
+                    <Label htmlFor="joint" className="font-normal cursor-pointer flex items-center gap-2">
+                      <MdPeople className="h-4 w-4" />
+                      Conta Conjunta (ambos têm acesso)
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="personal" id="personal" />
+                    <Label htmlFor="personal" className="font-normal cursor-pointer flex items-center gap-2">
+                      <MdPerson className="h-4 w-4" />
+                      Conta Pessoal (apenas você tem acesso)
+                    </Label>
+                  </div>
+                </RadioGroup>
+              ) : (
+                <>
+                  <Alert>
+                    <MdInfo className="h-4 w-4" />
+                    <AlertDescription className="text-sm">
+                      Apenas contas conjuntas estão disponíveis no seu modelo financeiro atual.
+                    </AlertDescription>
+                  </Alert>
+                  <input type="hidden" {...form.register('ownership')} value="joint" />
+                </>
+              )}
+            </div>
 
             {!account && (
               <InputField
