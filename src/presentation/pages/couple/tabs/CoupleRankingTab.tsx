@@ -1,27 +1,34 @@
 import { useGameProfile } from '@application/hooks/use-game-profile'
-import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
+import { LoadingWithLogo } from '@presentation/components/shared/LoadingWithLogo'
+import { NoCoupleCard } from '@presentation/components/couple/NoCoupleCard'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@presentation/components/ui/card'
 import { XPBar } from '@presentation/components/gamification/XPBar'
 import { LevelBadge } from '@presentation/components/gamification/LevelBadge'
 import { Trophy, Flame, Calendar, Sparkles, TrendingUp, CheckCircle2, Award } from 'lucide-react'
 import { CoupleRankingCard } from '@presentation/components/gamification/CoupleRankingCard'
+import { isNoCoupleError } from '@shared/utils/error-handler'
+import { useCoupleRanking } from '@application/hooks/use-couple-ranking'
 
 export function CoupleRankingTab() {
-  const { gameProfile, isLoading, error } = useGameProfile()
+  const { gameProfile, isLoading: profileLoading, error: profileError } = useGameProfile()
+  const { ranking, isLoading: rankingLoading, error: rankingError } = useCoupleRanking()
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
+  // Se está carregando qualquer um dos dados
+  if (profileLoading || rankingLoading) {
+    return <LoadingWithLogo message="Carregando progresso..." />
   }
 
-  if (error) {
+  // Se o erro é de não ter casal, mostra o NoCoupleCard
+  if ((rankingError && isNoCoupleError(rankingError)) || (profileError && isNoCoupleError(profileError))) {
+    return <NoCoupleCard />
+  }
+
+  // Se há erro mas não é de "não ter casal"
+  if (profileError) {
     return (
       <Card className="border-destructive/50">
         <CardContent className="p-6">
-          <p className="text-destructive text-sm">{error}</p>
+          <p className="text-destructive text-sm">{profileError}</p>
         </CardContent>
       </Card>
     )

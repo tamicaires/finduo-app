@@ -5,9 +5,17 @@ import { RippleWrapper } from '@presentation/components/ui/ripple'
 import { CoupleInfoTab } from './tabs/CoupleInfoTab'
 import { CoupleRankingTab } from './tabs/CoupleRankingTab'
 import { CoupleSettingsTab } from './tabs/CoupleSettingsTab'
+import { useCoupleRanking } from '@application/hooks/use-couple-ranking'
+import { isNoCoupleError } from '@shared/utils/error-handler'
+import { LoadingWithLogo } from '@presentation/components/shared/LoadingWithLogo'
+import { NoCoupleCard } from '@presentation/components/couple/NoCoupleCard'
 
 export function CoupleManagementPage() {
   const [activeTab, setActiveTab] = useState('ranking')
+  const { isLoading, error } = useCoupleRanking()
+
+  // Verifica se não há casal
+  const hasNoCouple = error && isNoCoupleError(error)
 
   return (
     <div className="p-4 md:p-6">
@@ -32,35 +40,43 @@ export function CoupleManagementPage() {
           </p>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start mb-6">
-            <TabsTrigger value="ranking" className="flex items-center gap-2">
-              <Trophy className="h-4 w-4" />
-              Progresso
-            </TabsTrigger>
-            <TabsTrigger value="info" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Informações
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Configurações
-            </TabsTrigger>
-          </TabsList>
+        {/* Loading state */}
+        {isLoading && <LoadingWithLogo message="Carregando..." />}
 
-          <TabsContent value="ranking" className="mt-0">
-            <CoupleRankingTab />
-          </TabsContent>
+        {/* No couple state - apenas o card, sem tabs */}
+        {!isLoading && hasNoCouple && <NoCoupleCard />}
 
-          <TabsContent value="info" className="mt-0">
-            <CoupleInfoTab />
-          </TabsContent>
+        {/* Tabs - apenas quando há casal */}
+        {!isLoading && !hasNoCouple && (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full justify-start mb-6">
+              <TabsTrigger value="ranking" className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Progresso
+              </TabsTrigger>
+              <TabsTrigger value="info" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Informações
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Configurações
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="settings" className="mt-0">
-            <CoupleSettingsTab />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="ranking" className="mt-0">
+              <CoupleRankingTab />
+            </TabsContent>
+
+            <TabsContent value="info" className="mt-0">
+              <CoupleInfoTab />
+            </TabsContent>
+
+            <TabsContent value="settings" className="mt-0">
+              <CoupleSettingsTab />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </div>
   )

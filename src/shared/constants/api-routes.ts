@@ -10,6 +10,8 @@ export const API_ROUTES = {
   UPDATE_FREE_SPENDING: '/couple/free-spending',
   UPDATE_COUPLE_SETTINGS: '/couple/settings',
   UPDATE_COUPLE_FINANCIAL_MODEL: '/couple/financial-model',
+  CREATE_INVITE: '/couple/invite',
+  ACCEPT_INVITE: '/couple/accept-invite',
 
   // Accounts
   CREATE_ACCOUNT: '/accounts',

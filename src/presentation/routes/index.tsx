@@ -11,6 +11,7 @@ import { GamificationPage } from '@presentation/pages/gamification/GamificationP
 import { AchievementsPage } from '@presentation/pages/achievements/AchievementsPage'
 import { BillingPage } from '@presentation/pages/billing/BillingPage'
 import { AdminPage } from '@presentation/pages/admin/AdminPage'
+import { AcceptInvitePage } from '@presentation/pages/invite/AcceptInvitePage'
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/aceitar-convite/:token',
+    element: <AcceptInvitePage />,
   },
   {
     path: '/dashboard',

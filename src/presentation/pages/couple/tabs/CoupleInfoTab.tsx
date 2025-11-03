@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Calendar, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
-import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
+import { LoadingWithLogo } from '@presentation/components/shared/LoadingWithLogo'
+import { NoCoupleCard } from '@presentation/components/couple/NoCoupleCard'
 import { formatCurrency } from '@shared/utils/format-currency'
+import { getErrorMessage, isNoCoupleError } from '@shared/utils/error-handler'
 import { apiClient } from '@infrastructure/http/api-client'
 import { API_ROUTES } from '@shared/constants/api-routes'
+import { useNavigate } from 'react-router-dom'
 
 interface UserInfo {
   id: string
@@ -25,6 +28,7 @@ interface CoupleInfo {
 }
 
 export function CoupleInfoTab() {
+  const navigate = useNavigate()
   const [coupleInfo, setCoupleInfo] = useState<CoupleInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +43,8 @@ export function CoupleInfoTab() {
       const response = await apiClient.get<CoupleInfo>(API_ROUTES.GET_COUPLE_INFO)
       setCoupleInfo(response.data)
     } catch (err) {
-      setError('Erro ao carregar informações do casal')
+      const errorMessage = getErrorMessage(err, 'Erro ao carregar informações do casal')
+      setError(errorMessage)
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -55,14 +60,23 @@ export function CoupleInfoTab() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
+    return <LoadingWithLogo message="Carregando informações do casal..." />
   }
 
   if (error || !coupleInfo) {
+    // Se o erro for de não ter casal, mostra o card bonito
+    if (error && isNoCoupleError(error)) {
+      return (
+        <NoCoupleCard
+          onInviteClick={() => {
+            // TODO: Implementar lógica de criar casal
+            console.log('Criar casal')
+          }}
+        />
+      )
+    }
+
+    // Para outros erros, mostra mensagem genérica
     return (
       <Card>
         <CardContent className="p-6 text-center text-muted-foreground">
