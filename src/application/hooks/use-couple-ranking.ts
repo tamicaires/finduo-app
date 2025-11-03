@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '@infrastructure/http/api-client'
 import { API_ROUTES } from '@shared/constants/api-routes'
+import { getErrorMessage } from '@shared/utils/error-handler'
 
 interface UserRanking {
   userId: string
@@ -35,9 +36,9 @@ export function useCoupleRanking() {
       setError(null)
       const response = await apiClient.get<CoupleRanking>(API_ROUTES.GET_COUPLE_RANKING)
       setRanking(response.data)
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching couple ranking:', err)
-      const errorMessage = err?.response?.data?.message || err?.message || 'Erro desconhecido'
+      const errorMessage = getErrorMessage(err, 'Erro desconhecido')
       setError(`Erro ao carregar ranking: ${errorMessage}`)
     } finally {
       setIsLoading(false)

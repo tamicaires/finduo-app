@@ -4,6 +4,7 @@ import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { Crown, TrendingUp, ArrowRight } from 'lucide-react'
 import { Button } from '@presentation/components/ui/button'
 import { Link } from 'react-router-dom'
+import { isNoCoupleError } from '@shared/utils/error-handler'
 
 export function GamificationSummaryCard() {
   const { ranking, isLoading, error } = useCoupleRanking()
@@ -18,7 +19,17 @@ export function GamificationSummaryCard() {
     )
   }
 
-  if (error || !ranking) {
+  // Se há erro de "não estar em um casal", não mostrar nada (é esperado)
+  if (error) {
+    // Silenciosamente oculta o card se o erro é de não ter casal
+    if (isNoCoupleError(error)) {
+      return null
+    }
+    // Outros erros também não mostram o card
+    return null
+  }
+
+  if (!ranking) {
     return null
   }
 

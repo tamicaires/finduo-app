@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from '@infrastructure/http/query-client'
 import { useAuthStore } from '@application/stores/auth.store'
 import { ThemeProvider } from '@presentation/components/providers/ThemeProvider'
+import { ErrorBoundary } from '@presentation/components/shared/ErrorBoundary'
 import './index.css'
 import App from './App.tsx'
 
@@ -13,11 +14,13 @@ useAuthStore.getState().initialize()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <App />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <App />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )
