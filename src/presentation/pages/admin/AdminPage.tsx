@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react';
-import { apiClient } from '@infrastructure/http/api-client';
-import { API_ROUTES } from '@shared/constants/api-routes';
+import { useState } from 'react';
+import { useAdmin } from '@application/hooks/use-admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@presentation/components/ui/card';
 import { Button } from '@presentation/components/ui/button';
 import { Input } from '@presentation/components/ui/input';
 import { Badge } from '@presentation/components/ui/badge';
-import { toast } from 'sonner';
 import {
   MdPerson,
   MdEmail,
@@ -13,8 +11,10 @@ import {
   MdLink,
   MdLinkOff,
   MdEdit,
-  MdSupervisorAccount
+  MdSupervisorAccount,
+  MdAdd
 } from 'react-icons/md';
+import { CreateUserDialog } from './components/CreateUserDialog';
 import { UpdateEmailDialog } from './components/UpdateEmailDialog';
 import { LinkCoupleDialog } from './components/LinkCoupleDialog';
 import { UnlinkCoupleDialog } from './components/UnlinkCoupleDialog';
@@ -30,203 +30,157 @@ interface User {
   partner_name?: string;
 }
 
-interface UsersResponse {
-  users: User[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
 export function AdminPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const {
+    users,
+    totalPages,
+    page,
+    search,
+    isLoading,
+    setPage,
+    setSearch,
+    createUser,
+    updateEmail,
+    linkCouple,
+    unlinkCouple,
+  } = useAdmin();
 
   // Dialog states
-  const [updateEmailDialog, setUpdateEmailDialog] = useState<{ open: boolean; user: User | null }>({ open: false, user: null });
+  const [createUserDialog, setCreateUserDialog] = useState(false);
+  const [updateEmailDialog, setUpdateEmailDialog] = useState<{ open: boolean; user: User | null }>({
+    open: false,
+    user: null,
+  });
   const [linkCoupleDialog, setLinkCoupleDialog] = useState(false);
-  const [unlinkCoupleDialog, setUnlinkCoupleDialog] = useState<{ open: boolean; coupleId: string; userNames: string }>({ open: false, coupleId: '', userNames: '' });
-
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      params.append('limit', '20');
-      if (search) params.append('search', search);
-
-      const response = await apiClient.get<UsersResponse>(
-        `${API_ROUTES.ADMIN_LIST_USERS}?${params.toString()}`
-      );
-
-      setUsers(response.data.users);
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error('Erro ao carregar usuários');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, [page]);
+  const [unlinkCoupleDialog, setUnlinkCoupleDialog] = useState<{
+    open: boolean;
+    coupleId: string;
+    userNames: string;
+  }>({ open: false, coupleId: '', userNames: '' });
 
   const handleSearch = () => {
     setPage(1);
-    fetchUsers();
-  };
-
-  const handleUpdateEmail = async (newEmail: string, reason?: string) => {
-    if (!updateEmailDialog.user) return;
-
-    try {
-      await apiClient.patch(API_ROUTES.ADMIN_UPDATE_USER_EMAIL(updateEmailDialog.user.id), {
-        newEmail,
-        reason,
-      });
-      toast.success('Email atualizado com sucesso!');
-      fetchUsers();
-    } catch (error: any) {
-      throw error;
-    }
-  };
-
-  const handleLinkCouple = async (userIdA: string, userIdB: string, reason?: string) => {
-    try {
-      await apiClient.post(API_ROUTES.ADMIN_LINK_COUPLE, {
-        user_id_a: userIdA,
-        user_id_b: userIdB,
-        reason,
-      });
-      toast.success('Casal vinculado com sucesso!');
-      fetchUsers();
-    } catch (error: any) {
-      throw error;
-    }
-  };
-
-  const handleUnlinkCouple = async (reason?: string) => {
-    try {
-      await apiClient.delete(API_ROUTES.ADMIN_UNLINK_COUPLE(unlinkCoupleDialog.coupleId), {
-        data: { reason },
-      });
-      toast.success('Casal desvinculado com sucesso!');
-      fetchUsers();
-    } catch (error: any) {
-      throw error;
-    }
   };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <Card>
-        <CardHeader className="bg-gradient-to-r from-primary to-primary/80 text-white">
+        <CardHeader className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
           <div className="flex items-center gap-3">
             <MdSupervisorAccount className="h-8 w-8" />
             <div>
-              <CardTitle>Painel de Administração</CardTitle>
-              <CardDescription className="text-white/80">
-                Gerenciamento de usuários e casais
+              <CardTitle className="text-2xl">Painel de Administração</CardTitle>
+              <CardDescription className="text-primary-foreground/80">
+                Gerenciar usuários, casais e configurações do sistema
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-
-        <CardContent className="pt-6 space-y-6">
-          {/* Search Bar */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome ou email..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10"
-              />
+        <CardContent className="p-6">
+          {/* Search and Actions */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1 flex gap-2">
+              <div className="relative flex-1">
+                <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  placeholder="Buscar por nome ou email..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pl-10"
+                />
+              </div>
+              <Button onClick={handleSearch} variant="secondary">
+                <MdSearch className="h-5 w-5" />
+              </Button>
             </div>
-            <Button onClick={handleSearch}>
-              Buscar
-            </Button>
-            <Button onClick={() => setLinkCoupleDialog(true)} variant="outline">
-              <MdLink className="h-4 w-4 mr-2" />
-              Vincular Casal
-            </Button>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setCreateUserDialog(true)}
+              >
+                <MdAdd className="h-5 w-5 mr-2" />
+                Criar Usuário
+              </Button>
+              <Button
+                onClick={() => setLinkCoupleDialog(true)}
+                variant="secondary"
+              >
+                <MdLink className="h-5 w-5 mr-2" />
+                Vincular Casal
+              </Button>
+            </div>
           </div>
 
-          {/* Users Table */}
-          {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Carregando...
+          {/* Users List */}
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Carregando usuários...</p>
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum usuário encontrado
+            <div className="text-center py-12">
+              <MdPerson className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Nenhum usuário encontrado</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {users.map((user) => (
-                <Card key={user.id} className="border-l-4 border-l-primary/50">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-3">
-                          <MdPerson className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-semibold">{user.name}</p>
-                            <div className="flex items-center gap-2">
-                              <MdEmail className="h-4 w-4 text-muted-foreground" />
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                            </div>
-                          </div>
+                <Card key={user.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="p-3 bg-primary/10 rounded-full">
+                          <MdPerson className="h-6 w-6 text-primary" />
                         </div>
-
-                        <div className="flex gap-2 items-center ml-8">
-                          <Badge variant={user.role === 'ADMIN' ? 'default' : 'secondary'}>
-                            {user.role}
-                          </Badge>
-                          {user.has_couple ? (
-                            <Badge variant="outline" className="bg-green-500/15 text-green-500 border-green-500/25">
-                              Em casal com: {user.partner_name}
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="bg-gray-500/10">
-                              Sem casal
-                            </Badge>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-lg truncate">{user.name}</h3>
+                            {user.role === 'ADMIN' && (
+                              <Badge variant="destructive">Admin</Badge>
+                            )}
+                            {user.has_couple && (
+                              <Badge variant="secondary">Em Casal</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MdEmail className="h-4 w-4" />
+                            <span className="truncate">{user.email}</span>
+                          </div>
+                          {user.partner_name && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                              <MdLink className="h-4 w-4" />
+                              <span>Parceiro(a): {user.partner_name}</span>
+                            </div>
                           )}
                         </div>
-
-                        <p className="text-xs text-muted-foreground ml-8">
-                          ID: {user.id} • Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                        </p>
                       </div>
 
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setUpdateEmailDialog({ open: true, user })}
+                          onClick={() =>
+                            setUpdateEmailDialog({ open: true, user })
+                          }
                         >
-                          <MdEdit className="h-4 w-4 mr-1" />
-                          Email
+                          <MdEdit className="h-4 w-4" />
                         </Button>
+
                         {user.has_couple && user.couple_id && (
                           <Button
                             size="sm"
-                            variant="destructive"
-                            onClick={() => setUnlinkCoupleDialog({
-                              open: true,
-                              coupleId: user.couple_id!,
-                              userNames: `${user.name} & ${user.partner_name}`
-                            })}
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() =>
+                              setUnlinkCoupleDialog({
+                                open: true,
+                                coupleId: user.couple_id!,
+                                userNames: `${user.name} e ${user.partner_name}`,
+                              })
+                            }
                           >
-                            <MdLinkOff className="h-4 w-4 mr-1" />
-                            Desvincular
+                            <MdLinkOff className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -239,22 +193,20 @@ export function AdminPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center items-center gap-2 mt-6">
               <Button
                 variant="outline"
-                size="sm"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
               >
                 Anterior
               </Button>
-              <span className="flex items-center px-4 text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 Página {page} de {totalPages}
               </span>
               <Button
                 variant="outline"
-                size="sm"
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
               >
                 Próxima
@@ -265,27 +217,50 @@ export function AdminPage() {
       </Card>
 
       {/* Dialogs */}
-      <UpdateEmailDialog
-        isOpen={updateEmailDialog.open}
-        userId={updateEmailDialog.user?.id || ''}
-        currentEmail={updateEmailDialog.user?.email || ''}
-        userName={updateEmailDialog.user?.name || ''}
-        onClose={() => setUpdateEmailDialog({ open: false, user: null })}
-        onConfirm={handleUpdateEmail}
+      <CreateUserDialog
+        isOpen={createUserDialog}
+        onClose={() => setCreateUserDialog(false)}
+        onConfirm={createUser}
       />
+
+      {updateEmailDialog.user && (
+        <UpdateEmailDialog
+          isOpen={updateEmailDialog.open}
+          userId={updateEmailDialog.user.id}
+          currentEmail={updateEmailDialog.user.email}
+          userName={updateEmailDialog.user.name}
+          onClose={() => setUpdateEmailDialog({ open: false, user: null })}
+          onConfirm={async (newEmail, reason) => {
+            await updateEmail({
+              userId: updateEmailDialog.user!.id,
+              newEmail,
+              reason,
+            });
+            setUpdateEmailDialog({ open: false, user: null });
+          }}
+        />
+      )}
 
       <LinkCoupleDialog
         isOpen={linkCoupleDialog}
         onClose={() => setLinkCoupleDialog(false)}
-        onConfirm={handleLinkCouple}
+        onConfirm={async (userIdA, userIdB, reason) => {
+          await linkCouple({ user_id_a: userIdA, user_id_b: userIdB, reason });
+          setLinkCoupleDialog(false);
+        }}
       />
 
       <UnlinkCoupleDialog
         isOpen={unlinkCoupleDialog.open}
         coupleId={unlinkCoupleDialog.coupleId}
         userNames={unlinkCoupleDialog.userNames}
-        onClose={() => setUnlinkCoupleDialog({ open: false, coupleId: '', userNames: '' })}
-        onConfirm={handleUnlinkCouple}
+        onClose={() =>
+          setUnlinkCoupleDialog({ open: false, coupleId: '', userNames: '' })
+        }
+        onConfirm={async (reason) => {
+          await unlinkCouple({ coupleId: unlinkCoupleDialog.coupleId, reason });
+          setUnlinkCoupleDialog({ open: false, coupleId: '', userNames: '' });
+        }}
       />
     </div>
   );

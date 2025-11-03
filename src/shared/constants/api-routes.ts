@@ -41,6 +41,7 @@ export const API_ROUTES = {
 
   // Admin
   ADMIN_LIST_USERS: '/admin/users',
+  ADMIN_REGISTER_USER: '/admin/users',
   ADMIN_UPDATE_USER_EMAIL: (userId: string) => `/admin/users/${userId}/email`,
   ADMIN_LINK_COUPLE: '/admin/couples/link',
   ADMIN_UNLINK_COUPLE: (coupleId: string) => `/admin/couples/${coupleId}`,

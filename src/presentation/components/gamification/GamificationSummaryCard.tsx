@@ -23,8 +23,14 @@ export function GamificationSummaryCard() {
   }
 
   const { currentUser, partner, winner } = ranking
+
+  // Verificar se os dados estão completos
+  if (!currentUser || !partner || !currentUser.level || !partner.level) {
+    return null
+  }
+
   const leader = currentUser.isWinner ? currentUser : partner
-  const leaderName = currentUser.isWinner ? 'Você' : partner.userName
+  const leaderName = currentUser.isWinner ? 'Você' : partner?.userName
 
   return (
     <Card className="overflow-hidden">
