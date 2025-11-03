@@ -10,6 +10,7 @@ import { SettingsPage } from '@presentation/pages/settings/SettingsPage'
 import { GamificationPage } from '@presentation/pages/gamification/GamificationPage'
 import { AchievementsPage } from '@presentation/pages/achievements/AchievementsPage'
 import { BillingPage } from '@presentation/pages/billing/BillingPage'
+import { AdminPage } from '@presentation/pages/admin/AdminPage'
 
 export const router = createBrowserRouter([
   {
@@ -96,6 +97,16 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <AppLayout>
           <BillingPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/admin',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <AdminPage />
         </AppLayout>
       </PrivateRoute>
     ),

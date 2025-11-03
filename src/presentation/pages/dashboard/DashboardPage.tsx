@@ -44,11 +44,12 @@ export function DashboardPage() {
   const expensesByCategory = transactionsList
     .filter(t => t.type === TransactionType.EXPENSE)
     .reduce((acc, t) => {
-      const existing = acc.find(item => item.category === t.category)
+      const categoryKey = typeof t.category === 'object' ? t.category?.name : t.category || 'Sem categoria'
+      const existing = acc.find(item => item.category === categoryKey)
       if (existing) {
         existing.amount += t.amount
       } else {
-        acc.push({ category: t.category, amount: t.amount })
+        acc.push({ category: categoryKey, amount: t.amount })
       }
       return acc
     }, [] as Array<{ category: string; amount: number }>)

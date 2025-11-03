@@ -2,6 +2,9 @@ export interface DashboardData {
   couple: {
     id: string
     reset_day: number
+    allow_personal_accounts: boolean
+    allow_private_transactions: boolean
+    financial_model: string
   }
   total_balance: number
   monthly_income: number

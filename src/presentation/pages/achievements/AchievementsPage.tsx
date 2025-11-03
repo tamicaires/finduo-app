@@ -25,7 +25,6 @@ const categoryColors: Record<string, string> = {
 
 function AchievementCard({ achievement, isLocked }: { achievement: Achievement; isLocked: boolean }) {
   const AchievementIcon = getIconComponent(achievement.icon)
-  const CategoryIcon = categoryIcons[achievement.category] || Trophy
 
   return (
     <Card className={`${isLocked ? 'opacity-60' : ''} transition-all hover:shadow-md`}>

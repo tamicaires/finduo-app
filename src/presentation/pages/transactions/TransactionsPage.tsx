@@ -234,7 +234,7 @@ export function TransactionsPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-xs md:text-sm truncate">
-                              {transaction.description || TransactionCategoryLabels[transaction.category]}
+                              {transaction.description || (typeof transaction.category === 'object' ? transaction.category?.name : transaction.category ? TransactionCategoryLabels[transaction.category] : 'Sem categoria')}
                             </p>
                             {transaction.is_free_spending && transaction.type === TransactionType.EXPENSE && (
                               <span className="text-[10px] md:text-xs px-1.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 whitespace-nowrap">
@@ -245,7 +245,7 @@ export function TransactionsPage() {
                           <div className="flex items-center gap-1 md:gap-2 text-xs text-muted-foreground mt-0.5">
                             <span className="truncate">{formatDate(transaction.transaction_date)}</span>
                             <span className="hidden sm:inline">•</span>
-                            <span className="hidden sm:inline truncate">{TransactionCategoryLabels[transaction.category]}</span>
+                            <span className="hidden sm:inline truncate">{typeof transaction.category === 'object' ? transaction.category?.name : transaction.category ? TransactionCategoryLabels[transaction.category] : 'Sem categoria'}</span>
                           </div>
                         </div>
                       </div>

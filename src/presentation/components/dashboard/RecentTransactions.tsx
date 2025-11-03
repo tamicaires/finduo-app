@@ -65,7 +65,7 @@ export function RecentTransactions({ transactions, maxItems = 5 }: RecentTransac
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-medium text-sm truncate">
-                          {transaction.description || TransactionCategoryLabels[transaction.category]}
+                          {transaction.description || (typeof transaction.category === 'object' ? transaction.category?.name : transaction.category ? TransactionCategoryLabels[transaction.category] : 'Sem categoria')}
                         </p>
                         {transaction.is_free_spending && (
                           <Badge variant="secondary" className="text-xs">
@@ -92,7 +92,7 @@ export function RecentTransactions({ transactions, maxItems = 5 }: RecentTransac
                       {transaction.type === TransactionType.INCOME ? '+' : '-'} {formatCurrency(transaction.amount)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {TransactionCategoryLabels[transaction.category]}
+                      {typeof transaction.category === 'object' ? transaction.category?.name : transaction.category ? TransactionCategoryLabels[transaction.category] : 'Sem categoria'}
                     </p>
                   </div>
                 </div>

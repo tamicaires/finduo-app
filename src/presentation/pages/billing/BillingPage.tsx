@@ -37,7 +37,7 @@ const planFeatures = {
 export function BillingPage() {
   const user = useAuthStore((state) => state.user)
 
-  const { data: subscription, isLoading, refetch } = useQuery({
+  const { data: subscription, isLoading } = useQuery({
     queryKey: ['subscription-status'],
     queryFn: () => subscriptionService.getStatus(),
   })

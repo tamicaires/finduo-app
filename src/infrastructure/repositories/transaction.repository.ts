@@ -8,10 +8,12 @@ export interface RegisterTransactionDto {
   account_id: string
   type: TransactionType
   amount: number
-  category: TransactionCategory
+  category?: TransactionCategory
+  category_id?: string
   description?: string
   transaction_date?: string
   is_free_spending?: boolean
+  visibility?: string
 }
 
 export interface TransactionFiltersDto {

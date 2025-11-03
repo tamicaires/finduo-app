@@ -38,4 +38,10 @@ export const API_ROUTES = {
   SUBSCRIPTION_STATUS: '/subscription/status',
   SUBSCRIPTION_CHECKOUT: '/subscription/checkout',
   SUBSCRIPTION_PORTAL: '/subscription/portal',
+
+  // Admin
+  ADMIN_LIST_USERS: '/admin/users',
+  ADMIN_UPDATE_USER_EMAIL: (userId: string) => `/admin/users/${userId}/email`,
+  ADMIN_LINK_COUPLE: '/admin/couples/link',
+  ADMIN_UNLINK_COUPLE: (coupleId: string) => `/admin/couples/${coupleId}`,
 } as const
