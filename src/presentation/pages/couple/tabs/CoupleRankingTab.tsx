@@ -11,7 +11,7 @@ import { useCoupleRanking } from '@application/hooks/use-couple-ranking'
 
 export function CoupleRankingTab() {
   const { gameProfile, isLoading: profileLoading, error: profileError } = useGameProfile()
-  const { ranking, isLoading: rankingLoading, error: rankingError } = useCoupleRanking()
+  const { isLoading: rankingLoading, error: rankingError } = useCoupleRanking()
 
   // Se está carregando qualquer um dos dados
   if (profileLoading || rankingLoading) {

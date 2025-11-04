@@ -1,5 +1,5 @@
-import { ReactNode } from 'react'
-import { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { Card, CardContent } from '@presentation/components/ui/card'
 import { Button } from '@presentation/components/ui/button'
 import { cn } from '@shared/utils'

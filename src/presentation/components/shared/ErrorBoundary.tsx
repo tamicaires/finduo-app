@@ -1,4 +1,4 @@
-import { Component, ReactNode } from 'react'
+import { Component, type ReactNode } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { Button } from '@presentation/components/ui/button'
 
@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
             </div>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <div className="mt-4 p-4 bg-muted rounded-lg text-left">
                 <p className="text-xs font-mono text-destructive break-all">
                   {this.state.error.message}

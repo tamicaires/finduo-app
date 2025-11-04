@@ -7,7 +7,6 @@ import { formatCurrency } from '@shared/utils/format-currency'
 import { getErrorMessage, isNoCoupleError } from '@shared/utils/error-handler'
 import { apiClient } from '@infrastructure/http/api-client'
 import { API_ROUTES } from '@shared/constants/api-routes'
-import { useNavigate } from 'react-router-dom'
 
 interface UserInfo {
   id: string
@@ -28,7 +27,6 @@ interface CoupleInfo {
 }
 
 export function CoupleInfoTab() {
-  const navigate = useNavigate()
   const [coupleInfo, setCoupleInfo] = useState<CoupleInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

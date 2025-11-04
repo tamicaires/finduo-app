@@ -4,7 +4,6 @@ import { Button } from '@presentation/components/ui/button'
 import { AnimatedCoupleRings } from '@presentation/components/shared/AnimatedCoupleRings'
 import { CreateCoupleDialog } from './CreateCoupleDialog'
 import { useState } from 'react'
-import { cn } from '@shared/utils'
 
 interface NoCoupleCardProps {
   onInviteClick?: () => void
