@@ -34,7 +34,7 @@ export function CoupleRankingTab() {
     )
   }
 
-  if (!gameProfile) {
+  if (!gameProfile || !gameProfile.profile) {
     return (
       <Card>
         <CardContent className="p-6">
