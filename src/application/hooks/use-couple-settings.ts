@@ -35,10 +35,12 @@ export function useCoupleSettings() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchSettings = useCallback(async () => {
     try {
       setIsLoading(true)
+      setError(null)
       const response = await apiClient.get(API_ROUTES.GET_COUPLE_INFO)
       const { couple, currentUser, partner } = response.data
 
@@ -50,10 +52,11 @@ export function useCoupleSettings() {
         allow_personal_accounts: couple.allow_personal_accounts,
         allow_private_transactions: couple.allow_private_transactions,
       })
-    } catch (error) {
-      toast.error('Erro ao carregar configurações')
-      console.error('Failed to fetch couple settings:', error)
-      throw error
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar configurações'
+      setError(errorMessage)
+      toast.error(errorMessage)
+      console.error('Failed to fetch couple settings:', err)
     } finally {
       setIsLoading(false)
     }
@@ -97,6 +100,7 @@ export function useCoupleSettings() {
     settings,
     isLoading,
     isSaving,
+    error,
     fetchSettings,
     updateSettings,
     updateFinancialModel,

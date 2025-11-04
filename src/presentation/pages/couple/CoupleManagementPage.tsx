@@ -17,6 +17,9 @@ export function CoupleManagementPage() {
   // Verifica se não há casal
   const hasNoCouple = error && isNoCoupleError(error)
 
+  // Se ainda está carregando OU se não tem casal, não mostra tabs
+  const shouldShowTabs = !isLoading && !hasNoCouple
+
   return (
     <div className="p-4 md:p-6">
       <div className="container mx-auto max-w-6xl">
@@ -47,7 +50,7 @@ export function CoupleManagementPage() {
         {!isLoading && hasNoCouple && <NoCoupleCard />}
 
         {/* Tabs - apenas quando há casal */}
-        {!isLoading && !hasNoCouple && (
+        {shouldShowTabs && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full justify-start mb-6">
               <TabsTrigger value="ranking" className="flex items-center gap-2">

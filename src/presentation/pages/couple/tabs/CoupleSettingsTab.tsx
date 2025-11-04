@@ -3,12 +3,16 @@ import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { GeneralSettingsSection } from './components/GeneralSettingsSection'
 import { useCoupleSettings } from '@application/hooks/use-couple-settings'
 import { FinancialModelSection } from './components/FinancialModelSection'
+import { NoCoupleCard } from '@presentation/components/couple/NoCoupleCard'
+import { Card, CardContent } from '@presentation/components/ui/card'
+import { isNoCoupleError } from '@shared/utils/error-handler'
 
 export function CoupleSettingsTab() {
   const {
     settings,
     isLoading,
     isSaving,
+    error,
     fetchSettings,
     updateSettings,
     updateFinancialModel,
@@ -43,6 +47,22 @@ export function CoupleSettingsTab() {
       <div className="flex items-center justify-center py-12">
         <LoadingSpinner size="lg" />
       </div>
+    )
+  }
+
+  // Se não há casal, mostra o NoCoupleCard
+  if (error && isNoCoupleError(error)) {
+    return <NoCoupleCard />
+  }
+
+  // Se há outro erro
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-destructive">
+          <p>{error}</p>
+        </CardContent>
+      </Card>
     )
   }
 
