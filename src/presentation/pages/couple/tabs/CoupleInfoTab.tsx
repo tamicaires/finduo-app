@@ -61,7 +61,7 @@ export function CoupleInfoTab() {
     return <LoadingWithLogo message="Carregando informações do casal..." />
   }
 
-  if (error || !coupleInfo) {
+  if (error || !coupleInfo || !coupleInfo.couple) {
     // Se o erro for de não ter casal, mostra o card bonito
     if (error && isNoCoupleError(error)) {
       return (
