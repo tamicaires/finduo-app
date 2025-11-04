@@ -44,6 +44,11 @@ export function useCoupleSettings() {
       const response = await apiClient.get(API_ROUTES.GET_COUPLE_INFO)
       const { couple, currentUser, partner } = response.data
 
+      // Verifica se os dados existem antes de acessar
+      if (!couple || !currentUser || !partner) {
+        throw new Error('Dados do casal incompletos')
+      }
+
       setSettings({
         free_spending_a_monthly: currentUser.free_spending_monthly,
         free_spending_b_monthly: partner.free_spending_monthly,
@@ -53,9 +58,12 @@ export function useCoupleSettings() {
         allow_private_transactions: couple.allow_private_transactions,
       })
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Erro ao carregar configurações'
+      const errorMessage = err.response?.data?.message || err.message || 'Erro ao carregar configurações'
       setError(errorMessage)
-      toast.error(errorMessage)
+      // Só mostra toast se não for erro de não ter casal (403)
+      if (err.response?.status !== 403) {
+        toast.error(errorMessage)
+      }
       console.error('Failed to fetch couple settings:', err)
     } finally {
       setIsLoading(false)
