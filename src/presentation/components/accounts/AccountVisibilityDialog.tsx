@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react'
-import { MdPeople, MdPerson, MdSwapHoriz } from 'react-icons/md'
+import { MdPeople, MdPerson, MdSwapHoriz, MdAccountBalanceWallet } from 'react-icons/md'
 import { Dialog, DialogContent } from '@presentation/components/ui/dialog'
 import { Card, CardContent, CardHeader } from '@presentation/components/ui/card'
 import { Button } from '@presentation/components/ui/button'
 import { Badge } from '@presentation/components/ui/badge'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import type { Account } from '@core/entities/Account'
+import { AccountTypeLabels } from '@core/enums/AccountType'
 
 interface VisibilityOption {
   id: 'joint' | 'personal'
@@ -76,7 +77,7 @@ export function AccountVisibilityDialog({
       <DialogContent className="max-w-2xl p-0">
         {/* Header */}
         <div className="bg-gradient-to-br from-primary to-orange-600 text-white rounded-t-lg p-6">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3">
             <div className="p-3 rounded-full bg-white/20">
               <MdSwapHoriz className="w-6 h-6" />
             </div>
@@ -85,49 +86,76 @@ export function AccountVisibilityDialog({
               <p className="text-sm text-white/80">Escolha quem pode acessar esta conta</p>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/10 rounded-lg p-4">
-            <p className="text-sm text-white/80 mb-1">Conta</p>
-            <p className="font-bold text-lg">{account.name}</p>
+        {/* Account Info Banner */}
+        <div className="px-6 pt-6">
+          <div className="bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-4 border border-border">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-lg bg-primary/10">
+                <MdAccountBalanceWallet className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                  Conta
+                </p>
+                <p className="font-bold text-lg truncate">{account.name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-muted-foreground">
+                    {AccountTypeLabels[account.type]}
+                  </span>
+                  <span className="text-xs text-muted-foreground">•</span>
+                  {account.is_joint ? (
+                    <Badge variant="default" className="text-xs">
+                      <MdPeople className="mr-1 h-3 w-3" />
+                      Conjunta
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">
+                      <MdPerson className="mr-1 h-3 w-3" />
+                      Pessoal
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Current State Banner */}
-          {currentOption && (
-            <div className="bg-muted/50 rounded-lg p-4 border-2 border-muted">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${account.is_joint ? 'bg-primary/10 text-primary' : 'bg-secondary/50 text-secondary-foreground'}`}>
-                    {currentOption.icon}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold">{currentOption.label}</p>
-                      <Badge variant="secondary" className="text-xs">
-                        Atual
-                      </Badge>
+        <div className="px-6 pb-6 space-y-6">
+          {/* Horizontal Layout: Current -> Arrow -> New */}
+          <div className="flex items-stretch gap-4">
+            {/* Current State */}
+            {currentOption && (
+              <div className="flex-1 bg-muted/50 rounded-lg px-4 pb-4 border-2 border-muted">
+                <div className="flex flex-col h-full">
+                  <Badge variant="secondary" className="text-xs w-fit rounded-none rounded-r-lg -ml-4">
+                    Atual
+                  </Badge>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`p-2 rounded-lg ${account.is_joint ? 'bg-primary/10 text-primary' : 'bg-secondary/50 text-secondary-foreground'}`}>
+                      {currentOption.icon}
                     </div>
-                    <p className="text-sm text-muted-foreground">{currentOption.description}</p>
+                    <div className="flex-1">
+                      <p className="font-semibold mb-1">{currentOption.label}</p>
+                      <p className="text-xs text-muted-foreground">{currentOption.description}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Arrow Indicator */}
-          <div className="flex justify-center">
-            <div className="p-2 rounded-full bg-muted">
-              <MdSwapHoriz className="w-5 h-5 text-muted-foreground" />
+            {/* Arrow Separator */}
+            <div className="flex items-center justify-center">
+              <div className="p-3 rounded-full bg-muted">
+                <MdSwapHoriz className="w-6 h-6 text-muted-foreground" />
+              </div>
             </div>
-          </div>
 
-          {/* New Option Selection */}
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-muted-foreground">Alterar para:</p>
+            {/* New Option */}
             {visibilityOptions
-              .filter((option) => option.id !== currentOption?.id) // Remove a opção atual
+              .filter((option) => option.id !== currentOption?.id)
               .map((option) => {
                 const isSelected = option.id === selectedOptionId
 
@@ -137,25 +165,20 @@ export function AccountVisibilityDialog({
                     type="button"
                     onClick={() => setSelectedOptionId(option.id)}
                     disabled={isPending}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                    className={`flex-1 text-left p-4 rounded-lg border-2 transition-all ${
                       isSelected
                         ? 'border-primary bg-primary/5 shadow-sm'
                         : 'border-border hover:border-primary/50 hover:bg-accent'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 h-full">
                       <div className={`p-2 rounded-lg ${option.id === 'joint' ? 'bg-primary/10 text-primary' : 'bg-secondary/50 text-secondary-foreground'}`}>
                         {option.icon}
                       </div>
                       <div className="flex-1">
                         <p className="font-semibold mb-1">{option.label}</p>
-                        <p className="text-sm text-muted-foreground">{option.description}</p>
+                        <p className="text-xs text-muted-foreground">{option.description}</p>
                       </div>
-                      {isSelected && (
-                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                          <div className="w-2 h-2 rounded-full bg-white" />
-                        </div>
-                      )}
                     </div>
                   </button>
                 )
