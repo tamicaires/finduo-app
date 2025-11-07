@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { HiPlus, HiTrash, HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
+import { MdLock, MdShare } from 'react-icons/md'
 import { toast } from 'sonner'
 import { useTransactions } from '@application/hooks/use-transactions'
 import { useAccounts } from '@application/hooks/use-accounts'
@@ -11,6 +12,7 @@ import { TransactionFormWizard } from '@presentation/components/transactions/Tra
 import { TransactionFilters, type TransactionFiltersState } from '@presentation/components/transactions/TransactionFilters'
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import { TransactionCategoryLabels } from '@core/enums/TransactionCategory'
+import { TransactionVisibility } from '@core/enums/TransactionVisibility'
 import { formatCurrency } from '@shared/utils/format-currency'
 import type {
   TransactionFiltersDto,
@@ -252,6 +254,15 @@ export function TransactionsPage() {
                                 Gasto Livre
                               </span>
                             )}
+                            {transaction.visibility === TransactionVisibility.PRIVATE && (
+                              <MdLock className="h-3 w-3 md:h-3.5 md:w-3.5 text-muted-foreground" title="Transação privada" />
+                            )}
+                            {transaction.visibility === TransactionVisibility.SHARED && accounts && (() => {
+                              const account = accounts.find(acc => acc.id === transaction.account_id)
+                              return account && !account.is_joint ? (
+                                <MdShare className="h-3 w-3 md:h-3.5 md:w-3.5 text-primary" title="Compartilhada pelo parceiro(a)" />
+                              ) : null
+                            })()}
                           </div>
                           <div className="flex items-center gap-1 md:gap-2 text-xs text-muted-foreground mt-0.5">
                             <span className="truncate">{formatDate(transaction.transaction_date)}</span>

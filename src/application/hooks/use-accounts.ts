@@ -45,6 +45,15 @@ export function useAccounts() {
     },
   })
 
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: ({ id, isPersonal }: { id: string; isPersonal: boolean }) =>
+      accountRepository.toggleVisibility(id, isPersonal),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DASHBOARD] })
+    },
+  })
+
   return {
     accounts,
     isLoading,
@@ -53,11 +62,14 @@ export function useAccounts() {
     createAccount: createMutation.mutate,
     updateAccount: updateMutation.mutate,
     deleteAccount: deleteMutation.mutate,
+    toggleVisibility: toggleVisibilityMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isTogglingVisibility: toggleVisibilityMutation.isPending,
     createError: createMutation.error,
     updateError: updateMutation.error,
     deleteError: deleteMutation.error,
+    toggleVisibilityError: toggleVisibilityMutation.error,
   }
 }

@@ -13,6 +13,7 @@ export interface CreateAccountDto {
 export interface UpdateAccountDto {
   name?: string
   type?: AccountType
+  is_personal?: boolean
 }
 
 export const accountRepository = {
@@ -35,5 +36,12 @@ export const accountRepository = {
 
   async delete(id: string): Promise<void> {
     await apiClient.delete(API_ROUTES.DELETE_ACCOUNT(id))
+  },
+
+  async toggleVisibility(id: string, isPersonal: boolean): Promise<Account> {
+    const response = await apiClient.patch<Account>(API_ROUTES.UPDATE_ACCOUNT(id), {
+      is_personal: isPersonal,
+    })
+    return response.data
   },
 }

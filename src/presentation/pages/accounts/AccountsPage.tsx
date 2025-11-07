@@ -1,12 +1,21 @@
 import { useState } from 'react'
-import { HiPlus, HiPencil, HiTrash } from 'react-icons/hi'
-import { MdAccountBalance, MdCreditCard, MdSavings, MdWallet } from 'react-icons/md'
+import { HiPlus, HiPencil, HiTrash, HiDotsVertical } from 'react-icons/hi'
+import { MdAccountBalance, MdCreditCard, MdSavings, MdWallet, MdPeople, MdPerson, MdSwapHoriz } from 'react-icons/md'
 import { toast } from 'sonner'
 import { useAccounts } from '@application/hooks/use-accounts'
 import { Button } from '@presentation/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
+import { Badge } from '@presentation/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@presentation/components/ui/dropdown-menu'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { AccountFormDialog } from '@presentation/components/accounts/AccountFormDialog'
+import { AccountVisibilityDialog } from '@presentation/components/accounts/AccountVisibilityDialog'
 import { AccountType, AccountTypeLabels } from '@core/enums/AccountType'
 import { formatCurrency } from '@shared/utils/format-currency'
 import type { Account } from '@core/entities/Account'
@@ -14,6 +23,7 @@ import type { CreateAccountDto } from '@infrastructure/repositories/account.repo
 
 export function AccountsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isVisibilityDialogOpen, setIsVisibilityDialogOpen] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<Account | undefined>()
 
   const {
@@ -22,9 +32,11 @@ export function AccountsPage() {
     createAccount,
     updateAccount,
     deleteAccount,
+    toggleVisibility,
     isCreating,
     isUpdating,
     isDeleting,
+    isTogglingVisibility,
   } = useAccounts()
 
   const handleCreate = (data: CreateAccountDto) => {
@@ -80,6 +92,27 @@ export function AccountsPage() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false)
     setSelectedAccount(undefined)
+  }
+
+  const handleOpenVisibilityDialog = (account: Account) => {
+    setSelectedAccount(account)
+    setIsVisibilityDialogOpen(true)
+  }
+
+  const handleToggleVisibility = (accountId: string, isPersonal: boolean) => {
+    toggleVisibility(
+      { id: accountId, isPersonal },
+      {
+        onSuccess: () => {
+          setIsVisibilityDialogOpen(false)
+          setSelectedAccount(undefined)
+          toast.success('Visibilidade da conta alterada com sucesso!')
+        },
+        onError: () => {
+          toast.error('Erro ao alterar visibilidade da conta')
+        },
+      }
+    )
   }
 
   if (isLoading) {
@@ -175,35 +208,60 @@ export function AccountsPage() {
                         {getAccountIcon(account.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm md:text-base truncate">
-                          {account.name}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-sm md:text-base truncate">
+                            {account.name}
+                          </p>
+                          {account.is_joint ? (
+                            <Badge variant="default" className="text-xs flex items-center gap-1">
+                              <MdPeople className="h-3 w-3" />
+                              Conjunta
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                              <MdPerson className="h-3 w-3" />
+                              Pessoal
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           {AccountTypeLabels[account.type]}
                         </p>
                       </div>
                     </div>
 
-                    {/* Ações - Mobile sempre visível */}
-                    <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 md:h-8 md:w-8"
-                        onClick={() => handleOpenDialog(account)}
-                        disabled={isDeleting}
-                      >
-                        <HiPencil className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 md:h-8 md:w-8"
-                        onClick={() => handleDelete(account.id)}
-                        disabled={isDeleting}
-                      >
-                        <HiTrash className="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600" />
-                      </Button>
+                    {/* Ações - Dropdown Menu */}
+                    <div className="md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 md:h-8 md:w-8"
+                            disabled={isDeleting || isTogglingVisibility}
+                          >
+                            <HiDotsVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenDialog(account)}>
+                            <HiPencil className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenVisibilityDialog(account)}>
+                            <MdSwapHoriz className="mr-2 h-4 w-4" />
+                            Alterar Visibilidade
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(account.id)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <HiTrash className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
 
@@ -226,6 +284,14 @@ export function AccountsPage() {
           onSubmit={selectedAccount ? handleUpdate : handleCreate}
           account={selectedAccount}
           isLoading={isCreating || isUpdating}
+        />
+
+        <AccountVisibilityDialog
+          account={selectedAccount || null}
+          open={isVisibilityDialogOpen}
+          onOpenChange={setIsVisibilityDialogOpen}
+          onConfirm={handleToggleVisibility}
+          isPending={isTogglingVisibility}
         />
       </div>
     </div>
