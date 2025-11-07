@@ -3,6 +3,7 @@ import { API_ROUTES } from '@shared/constants/api-routes'
 import type { Transaction } from '@core/entities/Transaction'
 import type { TransactionType } from '@core/enums/TransactionType'
 import type { TransactionCategory } from '@core/enums/TransactionCategory'
+import type { RecurrenceFrequency } from '@core/enums/RecurrenceFrequency'
 
 export interface RegisterTransactionDto {
   account_id: string
@@ -12,6 +13,35 @@ export interface RegisterTransactionDto {
   category_id?: string
   description?: string
   transaction_date?: string
+  is_free_spending?: boolean
+  visibility?: string
+}
+
+export interface RegisterInstallmentTransactionDto {
+  account_id: string
+  type: TransactionType
+  total_amount: number
+  total_installments: number
+  category_id?: string
+  description?: string
+  first_installment_date?: string
+  is_couple_expense?: boolean
+  is_free_spending?: boolean
+  visibility?: string
+}
+
+export interface RegisterRecurringTransactionDto {
+  account_id: string
+  type: TransactionType
+  amount: number
+  frequency: RecurrenceFrequency
+  interval?: number
+  start_date: string
+  end_date?: string
+  create_first_transaction?: boolean
+  category_id?: string
+  description?: string
+  is_couple_expense?: boolean
   is_free_spending?: boolean
   visibility?: string
 }
@@ -51,6 +81,22 @@ export const transactionRepository = {
   async register(data: RegisterTransactionDto): Promise<Transaction> {
     const response = await apiClient.post<Transaction>(
       API_ROUTES.REGISTER_TRANSACTION,
+      data
+    )
+    return response.data
+  },
+
+  async registerInstallment(data: RegisterInstallmentTransactionDto): Promise<Transaction[]> {
+    const response = await apiClient.post<Transaction[]>(
+      API_ROUTES.REGISTER_INSTALLMENT_TRANSACTION,
+      data
+    )
+    return response.data
+  },
+
+  async registerRecurring(data: RegisterRecurringTransactionDto): Promise<any> {
+    const response = await apiClient.post(
+      API_ROUTES.REGISTER_RECURRING_TRANSACTION,
       data
     )
     return response.data

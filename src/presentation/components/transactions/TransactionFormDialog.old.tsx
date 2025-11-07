@@ -1,0 +1,252 @@
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useQuery } from '@tanstack/react-query'
+import { MdSwapHoriz, MdAccountBalanceWallet, MdSwapVert, MdAttachMoney, MdLabel, MdCalendarToday, MdDescription, MdVisibilityOff, MdPeople, MdInfo } from 'react-icons/md'
+import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
+import { Button } from '@presentation/components/ui/button'
+import { Form } from '@presentation/components/ui/form'
+import { InputField } from '@presentation/components/form/InputField'
+import { SelectField } from '@presentation/components/form/SelectField'
+import { SwitchField } from '@presentation/components/form/SwitchField'
+import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
+import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
+import { Alert, AlertDescription } from '@presentation/components/ui/alert'
+import { Label } from '@presentation/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@presentation/components/ui/radio-group'
+import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
+import type { Account } from '@core/entities/Account'
+import { categoryService } from '@/application/services/category.service'
+import { getIconComponent } from '@/shared/utils/icon-mapper'
+import { useDashboard } from '@application/hooks/use-dashboard'
+
+const transactionSchema = z.object({
+  account_id: z.string().min(1, 'Conta é obrigatória'),
+  type: z.nativeEnum(TransactionType, {
+    message: 'Tipo é obrigatório'
+  }),
+  amount: z.number().positive('Valor deve ser maior que zero'),
+  category_id: z.string().optional(),
+  description: z.string().optional(),
+  transaction_date: z.string().optional(),
+  is_free_spending: z.boolean().default(false),
+  visibility: z.enum(['SHARED', 'FREE_SPENDING', 'PRIVATE']).default('SHARED'),
+})
+
+type TransactionFormData = z.infer<typeof transactionSchema>
+
+interface TransactionFormDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSubmit: (data: {
+    account_id: string
+    type: TransactionType
+    amount: number
+    category_id?: string
+    description?: string
+    transaction_date?: string
+    is_free_spending?: boolean
+    visibility?: string
+  }) => void
+  accounts?: Account[]
+  isLoading?: boolean
+}
+
+export function TransactionFormDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  accounts,
+  isLoading,
+}: TransactionFormDialogProps) {
+  const { dashboardData } = useDashboard()
+
+  const form = useForm({
+    resolver: zodResolver(transactionSchema),
+    defaultValues: {
+      account_id: '',
+      type: TransactionType.EXPENSE,
+      amount: 0,
+      category_id: '',
+      description: '',
+      transaction_date: new Date().toISOString().split('T')[0],
+      is_free_spending: false,
+      visibility: 'SHARED' as const,
+    },
+  })
+
+  const selectedType = form.watch('type')
+  const isFreeSpending = form.watch('is_free_spending')
+
+  // Buscar categorias do backend
+  const { data: categories, isLoading: loadingCategories } = useQuery({
+    queryKey: ['categories', selectedType],
+    queryFn: () => categoryService.getAll(selectedType),
+  })
+
+  const handleSubmit = (data: TransactionFormData) => {
+    // Se is_free_spending estiver marcado, a visibilidade deve ser FREE_SPENDING
+    const visibility = data.is_free_spending ? 'FREE_SPENDING' : data.visibility
+
+    onSubmit({
+      account_id: data.account_id,
+      type: data.type,
+      amount: data.amount,
+      category_id: data.category_id || undefined,
+      description: data.description || undefined,
+      transaction_date: data.transaction_date,
+      is_free_spending: data.is_free_spending,
+      visibility,
+    })
+  }
+
+  const typeOptions = Object.entries(TransactionTypeLabels).map(([value, label]) => ({
+    value,
+    label,
+  }))
+
+  const categoryOptions = (categories || []).map((category) => ({
+    value: category.id,
+    label: category.name,
+    icon: getIconComponent(category.icon) || undefined,
+  }))
+
+  const accountOptions = (Array.isArray(accounts) ? accounts : []).map((account) => ({
+    value: account.id,
+    label: account.name,
+  }))
+
+  const allowPrivateTransactions = dashboardData?.couple?.allow_private_transactions ?? false
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogWrapper
+          icon={MdSwapHoriz}
+          description="Registre uma entrada ou saída de dinheiro em uma das suas contas"
+        >
+          <DialogTitle>Nova Transação</DialogTitle>
+        </DialogWrapper>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SelectField
+                name="account_id"
+                label="Conta"
+                placeholder="Selecione a conta"
+                options={accountOptions}
+                icon={MdAccountBalanceWallet}
+                searchable
+                required
+              />
+
+              <SelectField
+                name="type"
+                label="Tipo"
+                placeholder="Selecione o tipo"
+                options={typeOptions}
+                icon={MdSwapVert}
+                required
+              />
+
+              <InputField
+                name="amount"
+                label="Valor"
+                type="money"
+                placeholder="R$ 0,00"
+                icon={MdAttachMoney}
+                required
+              />
+
+              <SelectField
+                name="category_id"
+                label="Categoria"
+                placeholder={loadingCategories ? "Carregando..." : "Selecione a categoria"}
+                options={categoryOptions}
+                icon={MdLabel}
+                searchable
+                disabled={loadingCategories}
+              />
+
+              <InputField
+                name="transaction_date"
+                label="Data"
+                type="date"
+                icon={MdCalendarToday}
+              />
+
+              <InputField
+                name="description"
+                label="Descrição (opcional)"
+                placeholder="Ex: Almoço no restaurante"
+                icon={MdDescription}
+              />
+            </div>
+
+            <SwitchField
+              name="is_free_spending"
+              label="Gasto Livre"
+              variant="secondary"
+              description="Este gasto será contabilizado como gasto livre pessoal"
+              tooltipMessage="Gastos livres são despesas pessoais que não afetam o orçamento compartilhado do casal. Cada parceiro tem um limite mensal definido para gastos livres."
+            />
+
+            {/* Visibilidade da Transação */}
+            {!isFreeSpending && (
+              <div className="space-y-3">
+                <Label>Visibilidade da Transação</Label>
+                {allowPrivateTransactions ? (
+                  <RadioGroup
+                    value={form.watch('visibility')}
+                    onValueChange={(value) => form.setValue('visibility', value as 'SHARED' | 'PRIVATE')}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="SHARED" id="shared" />
+                      <Label htmlFor="shared" className="font-normal cursor-pointer flex items-center gap-2">
+                        <MdPeople className="h-4 w-4" />
+                        Compartilhada (ambos podem ver)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="PRIVATE" id="private" />
+                      <Label htmlFor="private" className="font-normal cursor-pointer flex items-center gap-2">
+                        <MdVisibilityOff className="h-4 w-4" />
+                        Privada (apenas você pode ver)
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                ) : (
+                  <>
+                    <Alert>
+                      <MdInfo className="h-4 w-4" />
+                      <AlertDescription className="text-sm">
+                        Transações privadas não estão disponíveis no seu modelo financeiro atual.
+                      </AlertDescription>
+                    </Alert>
+                    <input type="hidden" {...form.register('visibility')} value="SHARED" />
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? <LoadingSpinner size="sm" /> : 'Registrar'}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}
