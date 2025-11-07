@@ -15,24 +15,26 @@ import { Label } from '@presentation/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@presentation/components/ui/radio-group'
 import { AccountType, AccountTypeLabels } from '@core/enums/AccountType'
 import { useDashboard } from '@application/hooks/use-dashboard'
-import { useAuth } from '@application/hooks/use-auth'
 import type { Account } from '@core/entities/Account'
 
 const accountSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
+  name: z.string().min(1, "Nome é obrigatório"),
   type: z.nativeEnum(AccountType, {
-    message: 'Tipo é obrigatório'
+    message: "Tipo é obrigatório",
   }),
-  initial_balance: z.string().min(1, 'Saldo inicial é obrigatório'),
-  ownership: z.enum(['joint', 'personal']),
-})
+  initial_balance: z
+    .string({
+      error: "Saldo inicial é obrigatórioF",
+    }),
+  ownership: z.enum(["joint", "personal"]),
+});
 
 type AccountFormData = z.infer<typeof accountSchema>
 
 interface AccountFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: { name: string; type: AccountType; initial_balance: number; owner_id?: string }) => void
+  onSubmit: (data: { name: string; type: AccountType; initial_balance?: number; is_personal?: boolean }) => void
   account?: Account
   isLoading?: boolean
 }
@@ -45,7 +47,6 @@ export function AccountFormDialog({
   isLoading,
 }: AccountFormDialogProps) {
   const { dashboardData } = useDashboard()
-  const { user } = useAuth()
 
   const form = useForm<AccountFormData>({
     resolver: zodResolver(accountSchema),
@@ -76,13 +77,13 @@ export function AccountFormDialog({
   }, [account, form])
 
   const handleSubmit = (data: AccountFormData) => {
-    const owner_id = data.ownership === 'personal' ? user?.id : undefined
+    const is_personal = data.ownership === 'personal'
 
     onSubmit({
       name: data.name,
       type: data.type,
-      initial_balance: parseFloat(data.initial_balance),
-      owner_id,
+      initial_balance: parseFloat(data.initial_balance) || 0,
+      is_personal,
     })
   }
 

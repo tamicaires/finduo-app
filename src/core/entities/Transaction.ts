@@ -1,5 +1,6 @@
 import { TransactionType } from '../enums/TransactionType'
 import { TransactionCategory } from '../enums/TransactionCategory'
+import { TransactionVisibility } from '../enums/TransactionVisibility'
 
 export interface Category {
   id: string
@@ -21,5 +22,6 @@ export interface Transaction {
   transaction_date: Date
   is_free_spending: boolean
   is_couple_expense: boolean
+  visibility: TransactionVisibility
   created_at: Date
 }

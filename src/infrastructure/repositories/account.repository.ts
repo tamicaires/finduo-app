@@ -6,13 +6,14 @@ import type { AccountType } from '@core/enums/AccountType'
 export interface CreateAccountDto {
   name: string
   type: AccountType
-  initial_balance: number
-  owner_id?: string
+  initial_balance?: number
+  is_personal?: boolean
 }
 
 export interface UpdateAccountDto {
   name?: string
   type?: AccountType
+  is_personal?: boolean
 }
 
 export const accountRepository = {
@@ -35,5 +36,12 @@ export const accountRepository = {
 
   async delete(id: string): Promise<void> {
     await apiClient.delete(API_ROUTES.DELETE_ACCOUNT(id))
+  },
+
+  async toggleVisibility(id: string, isPersonal: boolean): Promise<Account> {
+    const response = await apiClient.patch<Account>(API_ROUTES.UPDATE_ACCOUNT(id), {
+      is_personal: isPersonal,
+    })
+    return response.data
   },
 }

@@ -7,5 +7,6 @@ export interface Account {
   name: string
   type: AccountType
   balance: number
+  is_joint: boolean
   created_at: Date
 }

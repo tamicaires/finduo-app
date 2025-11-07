@@ -141,6 +141,11 @@ export function TransactionFormWizard({
 
   const isFreeSpending = form.watch('is_free_spending')
   const totalAmount = form.watch('total_amount') || 0
+  const selectedAccountId = form.watch('account_id')
+
+  // Verificar se a conta selecionada é conjunta ou pessoal
+  const selectedAccount = accounts?.find(acc => acc.id === selectedAccountId)
+  const isAccountJoint = selectedAccount?.is_joint ?? true
 
   // Reset quando o dialog fecha
   useEffect(() => {
@@ -156,6 +161,25 @@ export function TransactionFormWizard({
   useEffect(() => {
     form.reset(getDefaultValues())
   }, [selectedMode])
+
+  // Atualizar visibility quando a conta mudar
+  useEffect(() => {
+    if (selectedAccountId) {
+      const account = accounts?.find(acc => acc.id === selectedAccountId)
+      // Se mudar de conta conjunta para pessoal ou vice-versa, ajustar visibility
+      if (account && !isFreeSpending) {
+        const currentVisibility = form.getValues('visibility')
+        // Se conta pessoal e visibility é SHARED, manter
+        // Se conta conjunta e visibility é PRIVATE, manter
+        // Caso contrário, ajustar o padrão
+        if (account.is_joint && currentVisibility !== 'PRIVATE') {
+          form.setValue('visibility', 'SHARED')
+        } else if (!account.is_joint && currentVisibility !== 'SHARED') {
+          form.setValue('visibility', 'PRIVATE')
+        }
+      }
+    }
+  }, [selectedAccountId, accounts, form, isFreeSpending])
 
   // Buscar categorias
   const { data: categories, isLoading: loadingCategories, refetch: refetchCategories } = useQuery({
@@ -192,14 +216,14 @@ export function TransactionFormWizard({
       if (!has_end_date || !cleanData.end_date) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { end_date, ...finalData } = cleanData
-        onSubmit({ ...finalData, visibility } as RecurringTransactionFormData, selectedMode)
+        onSubmit({ ...finalData, type: selectedType!, visibility } as RecurringTransactionFormData, selectedMode)
         return
       }
-      onSubmit({ ...cleanData, visibility } as RecurringTransactionFormData, selectedMode)
+      onSubmit({ ...cleanData, type: selectedType!, visibility } as RecurringTransactionFormData, selectedMode)
       return
     }
 
-    onSubmit({ ...data, visibility }, selectedMode)
+    onSubmit({ ...data, type: selectedType!, visibility }, selectedMode)
   }
 
 
@@ -210,18 +234,32 @@ export function TransactionFormWizard({
 
   const allowPrivateTransactions = dashboardData?.couple?.allow_private_transactions ?? false
 
-  const visibilityOptions = [
-    {
-      value: 'SHARED',
-      label: 'Compartilhada',
-      description: 'Ambos podem ver',
-    },
-    {
-      value: 'PRIVATE',
-      label: 'Privada',
-      description: 'Apenas você vê',
-    },
-  ]
+  // Opções de visibilidade baseadas no tipo de conta
+  const visibilityOptions = isAccountJoint
+    ? [
+        {
+          value: 'SHARED',
+          label: 'Compartilhada',
+          description: 'Ambos podem ver',
+        },
+        {
+          value: 'PRIVATE',
+          label: 'Privada',
+          description: 'Apenas você vê',
+        },
+      ]
+    : [
+        {
+          value: 'PRIVATE',
+          label: 'Privada',
+          description: 'Apenas você vê',
+        },
+        {
+          value: 'SHARED',
+          label: 'Compartilhar',
+          description: 'Parceiro(a) também vê',
+        },
+      ]
 
   const getStepTitle = () => {
     switch (step) {
