@@ -126,7 +126,7 @@ export function AccountsPage() {
             size="sm"
           >
             <HiPlus className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
-            <span className="hidden sm:inline">Nova Conta</span>
+            <span className="hidden sm:inline">Cadastrar Conta</span>
             <span className="sm:hidden">Nova</span>
           </Button>
         </div>

@@ -192,14 +192,14 @@ export function TransactionFormWizard({
       if (!has_end_date || !cleanData.end_date) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { end_date, ...finalData } = cleanData
-        onSubmit({ ...finalData, visibility } as RecurringTransactionFormData, selectedMode)
+        onSubmit({ ...finalData, type: selectedType!, visibility } as RecurringTransactionFormData, selectedMode)
         return
       }
-      onSubmit({ ...cleanData, visibility } as RecurringTransactionFormData, selectedMode)
+      onSubmit({ ...cleanData, type: selectedType!, visibility } as RecurringTransactionFormData, selectedMode)
       return
     }
 
-    onSubmit({ ...data, visibility }, selectedMode)
+    onSubmit({ ...data, type: selectedType!, visibility }, selectedMode)
   }
 
 

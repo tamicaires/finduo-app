@@ -6,8 +6,8 @@ import type { AccountType } from '@core/enums/AccountType'
 export interface CreateAccountDto {
   name: string
   type: AccountType
-  initial_balance: number
-  owner_id?: string
+  initial_balance?: number
+  is_personal?: boolean
 }
 
 export interface UpdateAccountDto {
