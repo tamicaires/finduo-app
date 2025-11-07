@@ -5,8 +5,8 @@ import { API_ROUTES } from '@shared/constants/api-routes';
 import type { UsersResponse } from './types';
 
 export function useAdminUsers() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [page, setPage] = useState<number>(1);
+  const [search, setSearch] = useState<string>('');
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['admin-users', page, search],

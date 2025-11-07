@@ -60,6 +60,44 @@ interface ListTransactionsResponse {
   nextCursor: string | null
 }
 
+interface RecurringTemplate {
+  id: string
+  couple_id: string
+  type: 'INCOME' | 'EXPENSE'
+  amount: number
+  description: string | null
+  paid_by_id: string
+  account_id: string
+  is_couple_expense: boolean
+  is_free_spending: boolean
+  visibility: string
+  category_id: string | null
+  frequency: string
+  interval: number
+  start_date: Date
+  end_date: Date | null
+  next_occurrence: Date
+  is_active: boolean
+  created_at: Date
+  updated_at: Date
+}
+
+interface RecurringOccurrence {
+  id: string
+  template_id: string
+  due_date: string
+  status: 'PENDING' | 'PAID' | 'SKIPPED'
+  transaction_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+interface CreateRecurringTransactionResponse {
+  template: RecurringTemplate
+  occurrences: RecurringOccurrence[]
+  first_transaction: Transaction | null
+}
+
 export const transactionRepository = {
   async list(filters?: TransactionFiltersDto): Promise<Transaction[]> {
     const params = new URLSearchParams()
@@ -94,8 +132,8 @@ export const transactionRepository = {
     return response.data
   },
 
-  async registerRecurring(data: RegisterRecurringTransactionDto): Promise<any> {
-    const response = await apiClient.post(
+  async registerRecurring(data: RegisterRecurringTransactionDto): Promise<CreateRecurringTransactionResponse> {
+    const response = await apiClient.post<CreateRecurringTransactionResponse>(
       API_ROUTES.REGISTER_RECURRING_TRANSACTION,
       data
     )

@@ -4,6 +4,10 @@ import { API_ROUTES } from '@shared/constants/api-routes'
 import { toast } from 'sonner'
 import type { FinancialModel } from '@core/entities/Couple'
 
+interface ApiErrorResponse {
+  message: string
+}
+
 interface CoupleSettings {
   free_spending_a_monthly: number
   free_spending_b_monthly: number
@@ -57,11 +61,12 @@ export function useCoupleSettings() {
         allow_personal_accounts: couple.allow_personal_accounts,
         allow_private_transactions: couple.allow_private_transactions,
       })
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Erro ao carregar configurações'
+    } catch (err) {
+      const error = err as { response?: { data?: ApiErrorResponse; status?: number }; message?: string }
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao carregar configurações'
       setError(errorMessage)
       // Só mostra toast se não for erro de não ter casal (403)
-      if (err.response?.status !== 403) {
+      if (error.response?.status !== 403) {
         toast.error(errorMessage)
       }
       console.error('Failed to fetch couple settings:', err)

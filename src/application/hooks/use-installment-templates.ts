@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@infrastructure/http/api-client';
 import { toast } from 'react-hot-toast';
 import { QUERY_KEYS } from '@/shared/constants/app-config';
+import type { AxiosError } from 'axios';
 
 export interface InstallmentTemplate {
   id: string;
@@ -38,6 +39,17 @@ interface PayInstallmentInput {
   transaction_date?: string;
 }
 
+interface InstallmentTemplatesResponse {
+  data: InstallmentTemplate[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  hasInactiveTemplates: boolean;
+}
+
+interface ApiErrorResponse {
+  message: string;
+}
+
 export function useInstallmentTemplates(showInactive: boolean = false) {
   const queryClient = useQueryClient();
 
@@ -46,12 +58,12 @@ export function useInstallmentTemplates(showInactive: boolean = false) {
     queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES, showInactive ? 'all' : 'active'],
     queryFn: async () => {
       // Use showInactive parameter to get all or just active
-      const params: any = { limit: 20 };
+      const params: Record<string, string | number> = { limit: 20 };
       if (showInactive) {
         params.showInactive = 'true';
       }
 
-      const response = await apiClient.get<any>('/installments/templates', { params });
+      const response = await apiClient.get<InstallmentTemplatesResponse>('/installments/templates', { params });
 
       // Response structure: { data: [], nextCursor, hasMore, hasInactiveTemplates }
       return response.data;
@@ -70,7 +82,7 @@ export function useInstallmentTemplates(showInactive: boolean = false) {
       toast.success('Template desativado!');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES] });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<ApiErrorResponse>) => {
       toast.error(error.response?.data?.message || 'Erro ao desativar template');
     },
   });
@@ -84,7 +96,7 @@ export function useInstallmentTemplates(showInactive: boolean = false) {
       toast.success('Template ativado!');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES] });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<ApiErrorResponse>) => {
       toast.error(error.response?.data?.message || 'Erro ao ativar template');
     },
   });
@@ -99,7 +111,7 @@ export function useInstallmentTemplates(showInactive: boolean = false) {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSTALLMENTS] });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<ApiErrorResponse>) => {
       toast.error(error.response?.data?.message || 'Erro ao excluir template');
     },
   });
@@ -180,7 +192,7 @@ export function useInstallments(templateId?: string) {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES] });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<ApiErrorResponse>) => {
       toast.error(error.response?.data?.message || 'Erro ao pagar parcela');
     },
   });
@@ -194,7 +206,7 @@ export function useInstallments(templateId?: string) {
       toast.success('Parcela pulada!');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSTALLMENTS] });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<ApiErrorResponse>) => {
       toast.error(error.response?.data?.message || 'Erro ao pular parcela');
     },
   });

@@ -63,8 +63,9 @@ export function AcceptInvitePage() {
       setTimeout(() => {
         navigate('/login')
       }, 3000)
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erro ao aceitar convite'
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } }
+      const errorMessage = err.response?.data?.message || 'Erro ao aceitar convite'
       toast.error(errorMessage)
     } finally {
       setIsLoading(false)

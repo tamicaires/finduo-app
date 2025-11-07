@@ -66,8 +66,9 @@ export function CategorySelectField({
 
       onCategoryCreated?.()
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao criar categoria')
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } }
+      toast.error(err.response?.data?.message || 'Erro ao criar categoria')
     },
   })
 

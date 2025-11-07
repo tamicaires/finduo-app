@@ -61,10 +61,14 @@ const recurringTransactionSchema = z.object({
   create_first_transaction: z.boolean().default(true),
 })
 
+type SimpleTransactionFormData = z.infer<typeof simpleTransactionSchema>
+type InstallmentTransactionFormData = z.infer<typeof installmentTransactionSchema>
+type RecurringTransactionFormData = z.infer<typeof recurringTransactionSchema>
+
 interface TransactionFormWizardProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: any, mode: TransactionMode) => void
+  onSubmit: (data: SimpleTransactionFormData | InstallmentTransactionFormData | RecurringTransactionFormData, mode: TransactionMode) => void
   accounts?: Account[]
   isLoading?: boolean
 }
@@ -178,18 +182,24 @@ export function TransactionFormWizard({
     }
   }
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: SimpleTransactionFormData | InstallmentTransactionFormData | RecurringTransactionFormData) => {
     const visibility = data.is_free_spending ? 'FREE_SPENDING' : data.visibility
 
-    // Remove campos de controle que não devem ir para o backend
-    const { has_end_date, ...cleanData } = data
-
-    // Se não tem end_date, remove do payload
-    if (!has_end_date || !cleanData.end_date) {
-      delete cleanData.end_date
+    // Remove campos de controle que não devem ir para o backend (apenas para RecurringTransactionFormData)
+    if ('has_end_date' in data) {
+      const { has_end_date, ...cleanData } = data
+      // Se não tem end_date, remove do payload
+      if (!has_end_date || !cleanData.end_date) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { end_date, ...finalData } = cleanData
+        onSubmit({ ...finalData, visibility } as RecurringTransactionFormData, selectedMode)
+        return
+      }
+      onSubmit({ ...cleanData, visibility } as RecurringTransactionFormData, selectedMode)
+      return
     }
 
-    onSubmit({ ...cleanData, visibility }, selectedMode)
+    onSubmit({ ...data, visibility }, selectedMode)
   }
 
 
@@ -219,13 +229,14 @@ export function TransactionFormWizard({
         return 'Nova Transação'
       case 'mode':
         return selectedType === TransactionType.INCOME ? 'Como deseja registrar a receita?' : 'Como deseja registrar a despesa?'
-      case 'form':
+      case 'form': {
         const modeLabels = {
           simple: 'Transação Simples',
           installment: 'Transação Parcelada',
           recurring: 'Transação Recorrente',
         }
         return modeLabels[selectedMode]
+      }
     }
   }
 

@@ -85,8 +85,9 @@ export function useRecurringOccurrences(templateId?: string) {
         queryKey: [QUERY_KEYS.RECURRING_OCCURRENCES, variables.template_id],
       });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao gerar ocorrências');
+    onError: (error: unknown) => {
+      const errorObj = error as { response?: { data?: { message?: string } } };
+      toast.error(errorObj.response?.data?.message || 'Erro ao gerar ocorrências');
     },
   });
 
@@ -106,8 +107,9 @@ export function useRecurringOccurrences(templateId?: string) {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECURRING_TEMPLATES] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao pagar ocorrência');
+    onError: (error: unknown) => {
+      const errorObj = error as { response?: { data?: { message?: string } } };
+      toast.error(errorObj.response?.data?.message || 'Erro ao pagar ocorrência');
     },
   });
 
@@ -123,8 +125,9 @@ export function useRecurringOccurrences(templateId?: string) {
       toast.success('Ocorrência pulada!');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECURRING_OCCURRENCES] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao pular ocorrência');
+    onError: (error: unknown) => {
+      const errorObj = error as { response?: { data?: { message?: string } } };
+      toast.error(errorObj.response?.data?.message || 'Erro ao pular ocorrência');
     },
   });
 

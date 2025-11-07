@@ -69,7 +69,7 @@ type RecurringTransactionFormData = z.infer<typeof recurringTransactionSchema>
 interface TransactionFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: any, mode: TransactionMode) => void
+  onSubmit: (data: SimpleTransactionFormData | InstallmentTransactionFormData | RecurringTransactionFormData, mode: TransactionMode) => void
   accounts?: Account[]
   isLoading?: boolean
 }

@@ -40,8 +40,9 @@ export function UnlinkCoupleDialog({
     try {
       await onConfirm(reason || undefined);
       handleClose();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erro ao desvincular casal');
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error?.response?.data?.message || 'Erro ao desvincular casal');
     } finally {
       setIsSubmitting(false);
     }

@@ -19,8 +19,9 @@ export function useUpdateUserEmail() {
       toast.success('Email atualizado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Erro ao atualizar email';
+    onError: (error: unknown) => {
+      const errorObj = error as { response?: { data?: { message?: string } } };
+      const errorMessage = errorObj.response?.data?.message || 'Erro ao atualizar email';
       toast.error(errorMessage);
     },
   });

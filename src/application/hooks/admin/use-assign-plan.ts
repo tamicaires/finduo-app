@@ -17,8 +17,9 @@ export function useAssignPlan() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       queryClient.invalidateQueries({ queryKey: ['admin-couples'] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Erro ao atribuir plano';
+    onError: (error: unknown) => {
+      const errorObj = error as { response?: { data?: { message?: string } } };
+      const errorMessage: string = errorObj.response?.data?.message || 'Erro ao atribuir plano';
       toast.error(errorMessage);
     },
   });
