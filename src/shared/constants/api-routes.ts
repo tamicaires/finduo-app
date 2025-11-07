@@ -21,6 +21,8 @@ export const API_ROUTES = {
 
   // Transactions
   REGISTER_TRANSACTION: '/transactions',
+  REGISTER_INSTALLMENT_TRANSACTION: '/transactions/installment',
+  REGISTER_RECURRING_TRANSACTION: '/transactions/recurring',
   LIST_TRANSACTIONS: '/transactions',
   DELETE_TRANSACTION: (id: string) => `/transactions/${id}`,
 
@@ -47,4 +49,11 @@ export const API_ROUTES = {
   ADMIN_UPDATE_USER_EMAIL: (userId: string) => `/admin/users/${userId}/email`,
   ADMIN_LINK_COUPLE: '/admin/couples/link',
   ADMIN_UNLINK_COUPLE: (coupleId: string) => `/admin/couples/${coupleId}`,
+  ADMIN_ASSIGN_PLAN: '/admin/couples/assign-plan',
+  
+  // Recurring Templates
+  RECURRING_TEMPLATES: '/recurring-templates',
+  PAUSE_RECURRING_TEMPLATE: (id: string) => `/recurring-templates/${id}/pause`,
+  RESUME_RECURRING_TEMPLATE: (id: string) => `/recurring-templates/${id}/resume`,
+  DELETE_RECURRING_TEMPLATE: (id: string) => `/recurring-templates/${id}`,
 } as const

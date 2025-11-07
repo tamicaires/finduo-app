@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Wallet,
   ArrowLeftRight,
+  Repeat,
   Settings,
   Moon,
   Sun,
@@ -36,6 +37,11 @@ const navItems = [
     path: '/transactions',
     label: 'Transações',
     icon: ArrowLeftRight,
+  },
+  {
+    path: '/recurring',
+    label: 'Recorrências',
+    icon: Repeat,
   },
   {
     path: '/couple',

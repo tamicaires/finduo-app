@@ -1,0 +1,405 @@
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useQuery } from '@tanstack/react-query'
+import { MdSwapHoriz, MdAccountBalanceWallet, MdAttachMoney, MdLabel, MdCalendarToday, MdDescription, MdInfo, MdArrowBack } from 'react-icons/md'
+import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
+import { Button } from '@presentation/components/ui/button'
+import { Form } from '@presentation/components/ui/form'
+import { InputField } from '@presentation/components/form/InputField'
+import { SelectField } from '@presentation/components/form/SelectField'
+import { SwitchField } from '@presentation/components/form/SwitchField'
+import { RadioGroupField } from '@presentation/components/form/RadioGroupField'
+import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
+import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
+import { Alert, AlertDescription } from '@presentation/components/ui/alert'
+import { TransactionTypeSelector } from './TransactionTypeSelector'
+import { TransactionModeSelector } from './TransactionModeSelector'
+import { InstallmentFields } from './InstallmentFields'
+import { RecurringFields } from './RecurringFields'
+import { TransactionType } from '@core/enums/TransactionType'
+import { RecurrenceFrequency } from '@core/enums/RecurrenceFrequency'
+import type { TransactionMode } from '@core/types/transaction-mode'
+import type { Account } from '@core/entities/Account'
+import { categoryService } from '@/application/services/category.service'
+import { getIconComponent } from '@/shared/utils/icon-mapper'
+import { useDashboard } from '@application/hooks/use-dashboard'
+
+const baseTransactionFields = {
+  account_id: z.string().min(1, 'Conta é obrigatória'),
+  category_id: z.string().optional(),
+  description: z.string().optional(),
+  is_free_spending: z.boolean().default(false),
+  visibility: z.enum(['SHARED', 'FREE_SPENDING', 'PRIVATE']).default('SHARED'),
+}
+
+const simpleTransactionSchema = z.object({
+  ...baseTransactionFields,
+  type: z.nativeEnum(TransactionType),
+  amount: z.number().positive('Valor deve ser maior que zero'),
+  transaction_date: z.string().optional(),
+})
+
+const installmentTransactionSchema = z.object({
+  ...baseTransactionFields,
+  type: z.nativeEnum(TransactionType),
+  total_amount: z.number().positive('Valor total deve ser maior que zero'),
+  total_installments: z.number().min(2, 'Mínimo 2 parcelas').max(99, 'Máximo 99 parcelas'),
+  first_installment_date: z.string().optional(),
+})
+
+const recurringTransactionSchema = z.object({
+  ...baseTransactionFields,
+  type: z.nativeEnum(TransactionType),
+  amount: z.number().positive('Valor deve ser maior que zero'),
+  frequency: z.nativeEnum(RecurrenceFrequency),
+  interval: z.number().min(1).max(99).default(1),
+  start_date: z.string().min(1, 'Data de início é obrigatória'),
+  end_date: z.string().optional(),
+  has_end_date: z.boolean().default(false),
+  create_first_transaction: z.boolean().default(true),
+})
+
+interface TransactionFormWizardProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSubmit: (data: any, mode: TransactionMode) => void
+  accounts?: Account[]
+  isLoading?: boolean
+}
+
+export function TransactionFormWizard({
+  open,
+  onOpenChange,
+  onSubmit,
+  accounts,
+  isLoading,
+}: TransactionFormWizardProps) {
+  const { dashboardData } = useDashboard()
+  const [step, setStep] = useState<'type' | 'mode' | 'form'>('type')
+  const [selectedType, setSelectedType] = useState<TransactionType>()
+  const [selectedMode, setSelectedMode] = useState<TransactionMode>('simple')
+
+  const getSchema = () => {
+    switch (selectedMode) {
+      case 'installment':
+        return installmentTransactionSchema
+      case 'recurring':
+        return recurringTransactionSchema
+      default:
+        return simpleTransactionSchema
+    }
+  }
+
+  const getDefaultValues = () => {
+    const base = {
+      account_id: '',
+      category_id: '',
+      description: '',
+      is_free_spending: false,
+      visibility: 'SHARED' as const,
+      type: selectedType || TransactionType.EXPENSE,
+    }
+
+    switch (selectedMode) {
+      case 'installment':
+        return {
+          ...base,
+          total_amount: 0,
+          total_installments: 12,
+          first_installment_date: new Date().toISOString().split('T')[0],
+        }
+      case 'recurring':
+        return {
+          ...base,
+          amount: 0,
+          frequency: RecurrenceFrequency.MONTHLY,
+          interval: 1,
+          start_date: new Date().toISOString().split('T')[0],
+          end_date: '',
+          has_end_date: false,
+          create_first_transaction: true,
+        }
+      default:
+        return {
+          ...base,
+          amount: 0,
+          transaction_date: new Date().toISOString().split('T')[0],
+        }
+    }
+  }
+
+  const form = useForm({
+    resolver: zodResolver(getSchema()),
+    defaultValues: getDefaultValues(),
+  })
+
+  const isFreeSpending = form.watch('is_free_spending')
+  const totalAmount = form.watch('total_amount') || 0
+
+  // Reset quando o dialog fecha
+  useEffect(() => {
+    if (!open) {
+      setStep('type')
+      setSelectedType(undefined)
+      setSelectedMode('simple')
+      form.reset(getDefaultValues())
+    }
+  }, [open])
+
+  // Reset form quando muda o modo
+  useEffect(() => {
+    form.reset(getDefaultValues())
+  }, [selectedMode])
+
+  // Buscar categorias
+  const { data: categories, isLoading: loadingCategories } = useQuery({
+    queryKey: ['categories', selectedType],
+    queryFn: () => categoryService.getAll(selectedType!),
+    enabled: !!selectedType && step === 'form',
+  })
+
+  const handleTypeSelect = (type: TransactionType) => {
+    setSelectedType(type)
+    setStep('mode')
+  }
+
+  const handleModeSelect = (mode: TransactionMode) => {
+    setSelectedMode(mode)
+    setStep('form')
+  }
+
+  const handleBack = () => {
+    if (step === 'form') {
+      setStep('mode')
+    } else if (step === 'mode') {
+      setStep('type')
+    }
+  }
+
+  const handleSubmit = (data: any) => {
+    const visibility = data.is_free_spending ? 'FREE_SPENDING' : data.visibility
+
+    // Remove campos de controle que não devem ir para o backend
+    const { has_end_date, ...cleanData } = data
+
+    // Se não tem end_date, remove do payload
+    if (!has_end_date || !cleanData.end_date) {
+      delete cleanData.end_date
+    }
+
+    onSubmit({ ...cleanData, visibility }, selectedMode)
+  }
+
+  const categoryOptions = (categories || []).map((category) => ({
+    value: category.id,
+    label: category.name,
+    icon: getIconComponent(category.icon) || undefined,
+  }))
+
+  const accountOptions = (Array.isArray(accounts) ? accounts : []).map((account) => ({
+    value: account.id,
+    label: account.name,
+  }))
+
+  const allowPrivateTransactions = dashboardData?.couple?.allow_private_transactions ?? false
+
+  const visibilityOptions = [
+    {
+      value: 'SHARED',
+      label: 'Compartilhada',
+      description: 'Ambos podem ver',
+    },
+    {
+      value: 'PRIVATE',
+      label: 'Privada',
+      description: 'Apenas você vê',
+    },
+  ]
+
+  const getStepTitle = () => {
+    switch (step) {
+      case 'type':
+        return 'Nova Transação'
+      case 'mode':
+        return selectedType === TransactionType.INCOME ? 'Como deseja registrar a receita?' : 'Como deseja registrar a despesa?'
+      case 'form':
+        const modeLabels = {
+          simple: 'Transação Simples',
+          installment: 'Transação Parcelada',
+          recurring: 'Transação Recorrente',
+        }
+        return modeLabels[selectedMode]
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogWrapper
+          icon={MdSwapHoriz}
+          description={
+            step === 'type'
+              ? 'Registre uma entrada ou saída de dinheiro'
+              : step === 'mode'
+              ? 'Escolha como deseja organizar esta transação'
+              : 'Preencha os detalhes da transação'
+          }
+        >
+          <div className="flex items-center gap-3">
+            {step !== 'type' && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="h-8 w-8 p-0"
+              >
+                <MdArrowBack className="h-5 w-5" />
+              </Button>
+            )}
+            <DialogTitle>{getStepTitle()}</DialogTitle>
+          </div>
+        </DialogWrapper>
+
+        {/* Step 1: Tipo */}
+        {step === 'type' && (
+          <div className="py-4">
+            <TransactionTypeSelector
+              value={selectedType}
+              onChange={handleTypeSelect}
+            />
+          </div>
+        )}
+
+        {/* Step 2: Modo */}
+        {step === 'mode' && (
+          <div className="py-4">
+            <TransactionModeSelector
+              value={selectedMode}
+              onChange={handleModeSelect}
+            />
+          </div>
+        )}
+
+        {/* Step 3: Formulário */}
+        {step === 'form' && (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5 py-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SelectField
+                  name="account_id"
+                  label="Conta"
+                  placeholder="Selecione a conta"
+                  options={accountOptions}
+                  icon={MdAccountBalanceWallet}
+                  searchable
+                  required
+                />
+
+                {selectedMode === 'simple' && (
+                  <>
+                    <InputField
+                      name="amount"
+                      label="Valor"
+                      type="money"
+                      placeholder="R$ 0,00"
+                      icon={MdAttachMoney}
+                      required
+                    />
+                    <InputField
+                      name="transaction_date"
+                      label="Data"
+                      type="date"
+                      icon={MdCalendarToday}
+                    />
+                  </>
+                )}
+
+                {selectedMode === 'recurring' && (
+                  <InputField
+                    name="amount"
+                    label="Valor"
+                    type="money"
+                    placeholder="R$ 0,00"
+                    icon={MdAttachMoney}
+                    required
+                  />
+                )}
+
+                <SelectField
+                  name="category_id"
+                  label="Categoria"
+                  placeholder={loadingCategories ? "Carregando..." : "Selecione"}
+                  options={categoryOptions}
+                  icon={MdLabel}
+                  searchable
+                  disabled={loadingCategories}
+                />
+
+                <InputField
+                  name="description"
+                  label="Descrição (opcional)"
+                  placeholder="Ex: Almoço no restaurante"
+                  icon={MdDescription}
+                />
+              </div>
+
+              {selectedMode === 'installment' && (
+                <InstallmentFields totalAmount={totalAmount} />
+              )}
+
+              {selectedMode === 'recurring' && (
+                <RecurringFields />
+              )}
+
+              <SwitchField
+                name="is_free_spending"
+                label="Gasto Livre"
+                variant="secondary"
+                description="Contabilizado como gasto livre pessoal"
+                tooltipMessage="Gastos livres são despesas pessoais que não afetam o orçamento compartilhado"
+              />
+
+              {!isFreeSpending && (
+                <div className="space-y-3">
+                  {allowPrivateTransactions ? (
+                    <RadioGroupField
+                      name="visibility"
+                      label="Visibilidade"
+                      options={visibilityOptions}
+                      orientation="horizontal"
+                    />
+                  ) : (
+                    <Alert>
+                      <MdInfo className="h-4 w-4" />
+                      <AlertDescription className="text-sm">
+                        Transações privadas não estão disponíveis no seu plano atual
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-between gap-3 pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={isLoading}
+                >
+                  <MdArrowBack className="mr-2 h-4 w-4" />
+                  Voltar
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? <LoadingSpinner size="sm" /> : 'Registrar Transação'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}

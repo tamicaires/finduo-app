@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { transactionRepository } from '@infrastructure/repositories/transaction.repository'
-import type { RegisterTransactionDto, TransactionFiltersDto } from '@infrastructure/repositories/transaction.repository'
+import type { 
+  RegisterTransactionDto, 
+  RegisterInstallmentTransactionDto,
+  RegisterRecurringTransactionDto,
+  TransactionFiltersDto 
+} from '@infrastructure/repositories/transaction.repository'
 import { QUERY_KEYS } from '@shared/constants/app-config'
 
 export function useTransactions(filters?: TransactionFiltersDto) {
@@ -18,6 +23,24 @@ export function useTransactions(filters?: TransactionFiltersDto) {
 
   const registerMutation = useMutation({
     mutationFn: (data: RegisterTransactionDto) => transactionRepository.register(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DASHBOARD] })
+    },
+  })
+
+  const registerInstallmentMutation = useMutation({
+    mutationFn: (data: RegisterInstallmentTransactionDto) => transactionRepository.registerInstallment(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DASHBOARD] })
+    },
+  })
+
+  const registerRecurringMutation = useMutation({
+    mutationFn: (data: RegisterRecurringTransactionDto) => transactionRepository.registerRecurring(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] })
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] })
@@ -49,12 +72,18 @@ export function useTransactions(filters?: TransactionFiltersDto) {
     error,
     refetch,
     registerTransaction: registerMutation.mutate,
+    registerInstallmentTransaction: registerInstallmentMutation.mutate,
+    registerRecurringTransaction: registerRecurringMutation.mutate,
     deleteTransaction: deleteMutation.mutate,
     updateFreeSpending: updateFreeSpendingMutation.mutate,
     isRegistering: registerMutation.isPending,
+    isRegisteringInstallment: registerInstallmentMutation.isPending,
+    isRegisteringRecurring: registerRecurringMutation.isPending,
     isDeleting: deleteMutation.isPending,
     isUpdatingFreeSpending: updateFreeSpendingMutation.isPending,
     registerError: registerMutation.error,
+    registerInstallmentError: registerInstallmentMutation.error,
+    registerRecurringError: registerRecurringMutation.error,
     deleteError: deleteMutation.error,
   }
 }

@@ -7,12 +7,14 @@ import { Button } from '@presentation/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
 import { Switch } from '@presentation/components/ui/switch'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
-import { TransactionFormDialog } from '@presentation/components/transactions/TransactionFormDialog'
+import { TransactionFormWizard } from '@presentation/components/transactions/TransactionFormWizard'
 import { TransactionFilters, type TransactionFiltersState } from '@presentation/components/transactions/TransactionFilters'
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import { TransactionCategoryLabels } from '@core/enums/TransactionCategory'
 import { formatCurrency } from '@shared/utils/format-currency'
 import type { RegisterTransactionDto, TransactionFiltersDto } from '@infrastructure/repositories/transaction.repository'
+import type { RegisterInstallmentTransactionDto, RegisterRecurringTransactionDto } from '@infrastructure/repositories/transaction.repository'
+import type { TransactionMode } from '@core/types/transaction-mode'
 
 export function TransactionsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -33,29 +35,33 @@ export function TransactionsPage() {
     transactions,
     isLoading,
     registerTransaction,
+    registerInstallmentTransaction,
+    registerRecurringTransaction,
     deleteTransaction,
     updateFreeSpending,
     isRegistering,
+    isRegisteringInstallment,
+    isRegisteringRecurring,
     isDeleting,
     isUpdatingFreeSpending,
   } = useTransactions(apiFilters)
 
   const { accounts } = useAccounts()
 
-  const handleRegister = (data: RegisterTransactionDto) => {
-    registerTransaction(data, {
-      onSuccess: () => {
-        setIsDialogOpen(false)
-        toast.success('Transação registrada com sucesso!', {
-          description: `${TransactionTypeLabels[data.type]} de ${formatCurrency(data.amount)}`
-        })
-      },
-      onError: () => {
-        toast.error('Erro ao registrar transação', {
-          description: 'Tente novamente mais tarde'
-        })
-      }
-    })
+  const handleRegister = (data: any, mode: TransactionMode) => {
+    const onSuccess = () => {
+      setIsDialogOpen(false)
+      const messages = { simple: 'Transação registrada!', installment: 'Transação parcelada criada!', recurring: 'Transação recorrente criada!' }
+      toast.success(messages[mode])
+    }
+    const onError = () => { toast.error('Erro ao registrar transação') }
+    if (mode === 'installment') {
+      registerInstallmentTransaction(data, { onSuccess, onError })
+    } else if (mode === 'recurring') {
+      registerRecurringTransaction(data, { onSuccess, onError })
+    } else {
+      registerTransaction(data, { onSuccess, onError })
+    }
   }
 
   const handleDelete = (id: string) => {
@@ -300,7 +306,7 @@ export function TransactionsPage() {
           </CardContent>
         </Card>
 
-        <TransactionFormDialog
+        <TransactionFormWizard
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           onSubmit={handleRegister}

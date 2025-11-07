@@ -11,6 +11,7 @@ import { GamificationPage } from '@presentation/pages/gamification/GamificationP
 import { AchievementsPage } from '@presentation/pages/achievements/AchievementsPage'
 import { BillingPage } from '@presentation/pages/billing/BillingPage'
 import { AdminPage } from '@presentation/pages/admin/AdminPage'
+import { RecurringPage } from '@presentation/pages/recurring/RecurringPage'
 import { AcceptInvitePage } from '@presentation/pages/invite/AcceptInvitePage'
 
 export const router = createBrowserRouter([
@@ -52,6 +53,16 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <AppLayout>
           <TransactionsPage />
+        </AppLayout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/recurring',
+    element: (
+      <PrivateRoute>
+        <AppLayout>
+          <RecurringPage />
         </AppLayout>
       </PrivateRoute>
     ),
@@ -121,3 +132,4 @@ export const router = createBrowserRouter([
     element: <Navigate to="/dashboard" replace />,
   },
 ])
+
