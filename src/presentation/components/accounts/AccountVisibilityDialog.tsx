@@ -73,47 +73,62 @@ export function AccountVisibilityDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <Card className="border-0 shadow-none">
-          <CardHeader className="bg-gradient-to-br from-primary to-orange-600 text-white rounded-t-lg pb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-full bg-white/20">
-                <MdSwapHoriz className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold">Alterar Visibilidade</h3>
-                <p className="text-sm text-white/80">Escolha quem pode acessar esta conta</p>
-              </div>
+      <DialogContent className="max-w-2xl p-0">
+        {/* Header */}
+        <div className="bg-gradient-to-br from-primary to-orange-600 text-white rounded-t-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 rounded-full bg-white/20">
+              <MdSwapHoriz className="w-6 h-6" />
             </div>
-
-            <div className="bg-white/10 rounded-lg p-4">
-              <p className="text-sm text-white/80 mb-1">Conta</p>
-              <p className="font-bold text-lg">{account.name}</p>
+            <div>
+              <h3 className="text-xl font-bold">Alterar Visibilidade</h3>
+              <p className="text-sm text-white/80">Escolha quem pode acessar esta conta</p>
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="pt-6 space-y-6">
-            {/* Current Visibility */}
-            {currentOption && (
-              <div className="bg-muted/50 rounded-lg p-4">
-                <p className="text-sm font-medium text-muted-foreground mb-2">Visibilidade Atual</p>
+          <div className="bg-white/10 rounded-lg p-4">
+            <p className="text-sm text-white/80 mb-1">Conta</p>
+            <p className="font-bold text-lg">{account.name}</p>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Current State Banner */}
+          {currentOption && (
+            <div className="bg-muted/50 rounded-lg p-4 border-2 border-muted">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${account.is_joint ? 'bg-primary/10 text-primary' : 'bg-secondary/50 text-secondary-foreground'}`}>
                     {currentOption.icon}
                   </div>
                   <div>
-                    <p className="font-semibold">{currentOption.label}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold">{currentOption.label}</p>
+                      <Badge variant="secondary" className="text-xs">
+                        Atual
+                      </Badge>
+                    </div>
                     <p className="text-sm text-muted-foreground">{currentOption.description}</p>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Options */}
-            <div className="space-y-3">
-              <p className="text-sm font-medium">Escolha a nova visibilidade:</p>
-              {visibilityOptions.map((option) => {
-                const isCurrent = option.id === currentOption?.id
+          {/* Arrow Indicator */}
+          <div className="flex justify-center">
+            <div className="p-2 rounded-full bg-muted">
+              <MdSwapHoriz className="w-5 h-5 text-muted-foreground" />
+            </div>
+          </div>
+
+          {/* New Option Selection */}
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">Alterar para:</p>
+            {visibilityOptions
+              .filter((option) => option.id !== currentOption?.id) // Remove a opção atual
+              .map((option) => {
                 const isSelected = option.id === selectedOptionId
 
                 return (
@@ -121,12 +136,10 @@ export function AccountVisibilityDialog({
                     key={option.id}
                     type="button"
                     onClick={() => setSelectedOptionId(option.id)}
-                    disabled={isPending || isCurrent}
+                    disabled={isPending}
                     className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                       isSelected
-                        ? 'border-primary bg-primary/5'
-                        : isCurrent
-                        ? 'border-muted bg-muted/30 cursor-not-allowed'
+                        ? 'border-primary bg-primary/5 shadow-sm'
                         : 'border-border hover:border-primary/50 hover:bg-accent'
                     }`}
                   >
@@ -135,14 +148,7 @@ export function AccountVisibilityDialog({
                         {option.icon}
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold">{option.label}</p>
-                          {isCurrent && (
-                            <Badge variant="outline" className="text-xs">
-                              Atual
-                            </Badge>
-                          )}
-                        </div>
+                        <p className="font-semibold mb-1">{option.label}</p>
                         <p className="text-sm text-muted-foreground">{option.description}</p>
                       </div>
                       {isSelected && (
@@ -154,47 +160,34 @@ export function AccountVisibilityDialog({
                   </button>
                 )
               })}
-            </div>
+          </div>
 
-            {/* Summary */}
-            {selectedOption && selectedOption.id !== currentOption?.id && (
-              <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-                <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Resumo da Alteração</p>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="font-medium text-muted-foreground">{currentOption?.label}</span>
-                  <MdSwapHoriz className="w-4 h-4 text-primary" />
-                  <span className="font-medium text-primary">{selectedOption.label}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Footer Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                onClick={handleConfirm}
-                disabled={isPending || !selectedOption || selectedOption.id === currentOption?.id}
-              >
-                {isPending ? (
-                  <>
-                    <LoadingSpinner size="sm" className="mr-2" />
-                    Alterando...
-                  </>
-                ) : (
-                  'Confirmar Alteração'
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Footer Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirm}
+              disabled={isPending || !selectedOption || selectedOption.id === currentOption?.id}
+            >
+              {isPending ? (
+                <>
+                  <LoadingSpinner size="sm" className="mr-2" />
+                  Alterando...
+                </>
+              ) : (
+                'Confirmar Alteração'
+              )}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   )
