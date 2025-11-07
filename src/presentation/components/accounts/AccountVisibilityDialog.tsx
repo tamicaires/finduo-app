@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import { MdPeople, MdPerson, MdSwapHoriz, MdAccountBalanceWallet } from 'react-icons/md'
 import { Dialog, DialogContent } from '@presentation/components/ui/dialog'
-import { Card, CardContent, CardHeader } from '@presentation/components/ui/card'
 import { Button } from '@presentation/components/ui/button'
 import { Badge } from '@presentation/components/ui/badge'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
