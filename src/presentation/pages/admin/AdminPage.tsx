@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { useAdmin } from '@application/hooks/use-admin';
+import {
+  useAdminUsers,
+  useCreateUser,
+  useUpdateUserEmail,
+  useLinkCouple,
+  useUnlinkCouple
+} from '@application/hooks/admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@presentation/components/ui/card';
 import { Button } from '@presentation/components/ui/button';
 import { Input } from '@presentation/components/ui/input';
@@ -31,19 +37,12 @@ interface User {
 }
 
 export function AdminPage() {
-  const {
-    users,
-    totalPages,
-    page,
-    search,
-    isLoading,
-    setPage,
-    setSearch,
-    createUser,
-    updateEmail,
-    linkCouple,
-    unlinkCouple,
-  } = useAdmin();
+  // Individual hooks for better performance
+  const { users, totalPages, page, search, isLoading, setPage, setSearch } = useAdminUsers();
+  const { createUser } = useCreateUser();
+  const { updateEmail } = useUpdateUserEmail();
+  const { linkCouple } = useLinkCouple();
+  const { unlinkCouple } = useUnlinkCouple();
 
   // Dialog states
   const [createUserDialog, setCreateUserDialog] = useState(false);

@@ -1,6 +1,6 @@
+import { apiClient } from '@/infrastructure/http/api-client';
+import { QUERY_KEYS } from '@/shared/constants/app-config';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@infrastructure/api/client';
-import { API_ROUTES, QUERY_KEYS } from '@shared/constants';
 import { toast } from 'react-hot-toast';
 
 export interface RecurringOccurrence {
@@ -100,7 +100,7 @@ export function useRecurringOccurrences(templateId?: string) {
       );
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Ocorrência paga com sucesso!');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECURRING_OCCURRENCES] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] });

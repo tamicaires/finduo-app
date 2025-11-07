@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
-import { MdAttachMoney, MdCalendarToday, MdViewWeek, MdInfo } from 'react-icons/md'
+import { MdAttachMoney, MdCalendarToday, MdViewWeek } from 'react-icons/md'
 import { InputField } from '@presentation/components/form/InputField'
-import { Alert, AlertDescription } from '@presentation/components/ui/alert'
 import { formatCurrency } from '@shared/utils/format-currency'
 
 interface InstallmentFieldsProps {

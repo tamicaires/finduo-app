@@ -1,71 +1,91 @@
-import { useState } from 'react'
-import { MdRepeat, MdPause, MdPlayArrow, MdDelete, MdAdd, MdViewWeek, MdExpandMore, MdExpandLess } from 'react-icons/md'
-import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
-import { Button } from '@presentation/components/ui/button'
+import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { MdRepeat, MdViewWeek } from 'react-icons/md'
 import { Badge } from '@presentation/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@presentation/components/ui/tabs'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
+import { OccurrenceFilters, type FilterType } from './components/OccurrenceFilters'
+import { OccurrencesList } from './components/OccurrencesList'
+import { InstallmentsList } from './components/InstallmentsList'
 import { useRecurringTemplates } from '@application/hooks/use-recurring-templates'
-import { useInstallments } from '@application/hooks/use-installments'
-import { formatCurrency } from '@shared/utils/format-currency'
-import { RecurrenceFrequencyLabels } from '@core/enums/RecurrenceFrequency'
-import { TransactionTypeLabels } from '@core/enums/TransactionType'
-import { cn } from '@shared/utils'
+import { useRecurringOccurrences } from '@application/hooks/use-recurring-occurrences'
+import { useInstallmentTemplates } from '@application/hooks/use-installment-templates'
 
 export function RecurringPage() {
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filter, setFilter] = useState<FilterType>('all')
+  const [showInactive, setShowInactive] = useState(false)
+  const [activeTab, setActiveTab] = useState('occurrences')
+  
+  // Recurring hooks
+  const { templates: recurringTemplates, isLoading: isLoadingRecurring } = useRecurringTemplates()
   const {
-    templates,
-    isLoading,
-    pauseTemplate,
-    resumeTemplate,
-    deleteTemplate,
-    isPausing,
-    isResuming,
-    isDeleting,
-  } = useRecurringTemplates()
+    dueOccurrences,
+    payOccurrence,
+    skipOccurrence,
+    isPaying,
+    isSkipping,
+    isPastDue,
+    isOverdue,
+  } = useRecurringOccurrences()
 
+  // Installment hooks
   const {
-    installmentGroups,
+    templates: installmentTemplates,
+    hasInactiveTemplates,
     isLoading: isLoadingInstallments,
-  } = useInstallments()
+    activateTemplate,
+    deactivateTemplate,
+    deleteTemplate,
+    isActivating,
+    isDeactivating,
+    isDeleting,
+  } = useInstallmentTemplates(showInactive)
 
-  const toggleGroup = (groupId: string) => {
-    setExpandedGroups((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(groupId)) {
-        newSet.delete(groupId)
-      } else {
-        newSet.add(groupId)
-      }
-      return newSet
+  // Memoized computed values
+  const occurrencesWithMeta = useMemo(
+    () =>
+      dueOccurrences.map((occ) => {
+        const template = recurringTemplates?.find((t) => t.id === occ.template_id)
+        return {
+          ...occ,
+          description: template?.description || 'Sem descrição',
+          amount: template?.amount || 0,
+        }
+      }),
+    [dueOccurrences, recurringTemplates]
+  )
+
+  const filteredOccurrences = useMemo(() => {
+    return occurrencesWithMeta.filter((occ) => {
+      const matchesSearch = occ.description.toLowerCase().includes(searchTerm.toLowerCase())
+      if (!matchesSearch) return false
+
+      if (filter === 'all') return true
+      if (filter === 'pending') return occ.status === 'PENDING'
+      if (filter === 'paid') return occ.status === 'PAID'
+      if (filter === 'overdue') return isOverdue(occ.due_date)
+
+      return true
     })
+  }, [occurrencesWithMeta, searchTerm, filter, isOverdue])
+
+  // Handlers
+  const handlePayOccurrence = (occurrenceId: string, transactionDate?: string) => {
+    payOccurrence({ occurrence_id: occurrenceId, transaction_date: transactionDate })
   }
 
-  const handlePause = async (id: string) => {
-    await pauseTemplate(id)
+  const handleSkipOccurrence = (occurrenceId: string) => {
+    skipOccurrence(occurrenceId)
   }
 
-  const handleResume = async (id: string) => {
-    await resumeTemplate(id)
-  }
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta recorrência? Esta ação não pode ser desfeita.')) {
-      await deleteTemplate(id)
+  const handleDeleteTemplate = (templateId: string) => {
+    if (confirm('Tem certeza que deseja excluir este parcelamento? Esta ação não pode ser desfeita.')) {
+      deleteTemplate(templateId)
     }
   }
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('pt-BR')
-  }
-
-  const getFrequencyText = (frequency: string, interval: number) => {
-    const label = RecurrenceFrequencyLabels[frequency as keyof typeof RecurrenceFrequencyLabels]
-    return interval === 1 ? label : `A cada ${interval} ${label.toLowerCase()}`
-  }
-
-  if (isLoading || isLoadingInstallments) {
+  if (isLoadingRecurring || isLoadingInstallments) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -73,319 +93,90 @@ export function RecurringPage() {
     )
   }
 
-  const activeTemplates = templates?.filter((t) => t.is_active) || []
-  const pausedTemplates = templates?.filter((t) => !t.is_active) || []
-
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 min-h-screen">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
             <div>
-              <h2 className="text-3xl font-bold">Transações Recorrentes & Parceladas</h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h2 className="text-3xl font-bold flex items-center gap-3">
+                <MdRepeat className="h-8 w-8 text-primary" />
+                Transações Recorrentes
+              </h2>
+              <p className="text-sm text-muted-foreground mt-2">
                 Gerencie suas transações automáticas e parceladas
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Active Templates */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <MdRepeat className="h-6 w-6 text-primary" />
-            <h3 className="text-xl font-semibold">Recorrências Ativas</h3>
-            <Badge variant="secondary">{activeTemplates.length}</Badge>
-          </div>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="occurrences" className="flex items-center gap-2">
+              <MdRepeat className="h-4 w-4" />
+              Recorrências
+              <Badge variant="secondary" className="ml-1">
+                {filteredOccurrences.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="installments" className="flex items-center gap-2">
+              <MdViewWeek className="h-4 w-4" />
+              Parcelamentos
+              <Badge variant="secondary" className="ml-1">
+                {installmentTemplates.length}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
 
-          {activeTemplates.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <MdRepeat className="h-16 w-16 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground text-center">
-                  Nenhuma transação recorrente ativa
-                </p>
-                <p className="text-sm text-muted-foreground text-center mt-2">
-                  Crie uma nova transação recorrente na página de transações
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {activeTemplates.map((template) => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          {template.description || 'Sem descrição'}
-                          <Badge variant={template.type === 'INCOME' ? 'default' : 'destructive'}>
-                            {TransactionTypeLabels[template.type]}
-                          </Badge>
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {getFrequencyText(template.frequency, template.interval)}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="bg-green-500/15 text-green-500 border-green-500/25">
-                        Ativa
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Valor:</span>
-                        <span className="font-semibold text-lg">
-                          {formatCurrency(template.amount)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Próxima ocorrência:</span>
-                        <span className="font-medium">
-                          {formatDate(template.next_occurrence)}
-                        </span>
-                      </div>
-                      {template.end_date && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Termina em:</span>
-                          <span>{formatDate(template.end_date)}</span>
-                        </div>
-                      )}
-                      <div className="flex gap-2 pt-2 border-t">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handlePause(template.id)}
-                          disabled={isPausing}
-                        >
-                          <MdPause className="h-4 w-4 mr-1" />
-                          Pausar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => handleDelete(template.id)}
-                          disabled={isDeleting}
-                        >
-                          <MdDelete className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Occurrences Tab */}
+          <TabsContent value="occurrences" className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <OccurrenceFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                filter={filter}
+                onFilterChange={setFilter}
+              />
+            </motion.div>
 
-        {/* Installment Groups */}
-        {installmentGroups.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <MdViewWeek className="h-6 w-6 text-primary" />
-              <h3 className="text-xl font-semibold">Compras Parceladas</h3>
-              <Badge variant="secondary">{installmentGroups.length}</Badge>
-            </div>
+            <OccurrencesList
+              occurrences={filteredOccurrences}
+              searchTerm={searchTerm}
+              onPay={handlePayOccurrence}
+              onSkip={handleSkipOccurrence}
+              isPaying={isPaying}
+              isSkipping={isSkipping}
+              isPastDue={isPastDue}
+              isOverdue={isOverdue}
+            />
+          </TabsContent>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              {installmentGroups.map((group) => {
-                const isExpanded = expandedGroups.has(group.id)
-                const progress = (group.paidInstallments / group.totalInstallments) * 100
-
-                return (
-                  <Card key={group.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            {group.description || 'Sem descrição'}
-                            <Badge variant={group.type === 'INCOME' ? 'default' : 'destructive'}>
-                              {TransactionTypeLabels[group.type]}
-                            </Badge>
-                          </CardTitle>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {group.totalInstallments}x de {formatCurrency(group.installmentAmount)}
-                          </p>
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            progress === 100
-                              ? "bg-green-50 text-green-700 border-green-200"
-                              : "bg-blue-50 text-blue-700 border-blue-200"
-                          )}
-                        >
-                          {group.paidInstallments}/{group.totalInstallments}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Valor total:</span>
-                          <span className="font-semibold text-lg">
-                            {formatCurrency(group.totalAmount)}
-                          </span>
-                        </div>
-
-                        {/* Progress bar */}
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Progresso</span>
-                            <span>{progress.toFixed(0)}%</span>
-                          </div>
-                          <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary transition-all duration-300"
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                        </div>
-
-                        {group.nextInstallmentDate && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Próxima parcela:</span>
-                            <span className="font-medium">
-                              {formatDate(group.nextInstallmentDate)}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Toggle button */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full mt-2"
-                          onClick={() => toggleGroup(group.id)}
-                        >
-                          {isExpanded ? (
-                            <>
-                              <MdExpandLess className="h-4 w-4 mr-1" />
-                              Ocultar parcelas
-                            </>
-                          ) : (
-                            <>
-                              <MdExpandMore className="h-4 w-4 mr-1" />
-                              Ver todas as parcelas
-                            </>
-                          )}
-                        </Button>
-
-                        {/* Expanded installments list */}
-                        {isExpanded && (
-                          <div className="mt-3 space-y-2 border-t pt-3">
-                            {group.installments.map((installment) => {
-                              const isPaid = new Date(installment.transaction_date) <= new Date()
-                              return (
-                                <div
-                                  key={installment.id}
-                                  className={cn(
-                                    "flex justify-between items-center p-2 rounded text-sm",
-                                    isPaid ? "bg-muted/50" : "bg-secondary/30"
-                                  )}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium">
-                                      {installment.installment_number}/{group.totalInstallments}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      {formatDate(installment.transaction_date)}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium">
-                                      {formatCurrency(installment.amount)}
-                                    </span>
-                                    {isPaid && (
-                                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                                        Paga
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Paused Templates */}
-        {pausedTemplates.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <MdPause className="h-6 w-6 text-muted-foreground" />
-              <h3 className="text-xl font-semibold">Recorrências Pausadas</h3>
-              <Badge variant="secondary">{pausedTemplates.length}</Badge>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              {pausedTemplates.map((template) => (
-                <Card key={template.id} className="opacity-75 hover:opacity-100 transition-opacity">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          {template.description || 'Sem descrição'}
-                          <Badge variant={template.type === 'INCOME' ? 'default' : 'destructive'}>
-                            {TransactionTypeLabels[template.type]}
-                          </Badge>
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {getFrequencyText(template.frequency, template.interval)}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                        Pausada
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Valor:</span>
-                        <span className="font-semibold text-lg">
-                          {formatCurrency(template.amount)}
-                        </span>
-                      </div>
-                      <div className="flex gap-2 pt-2 border-t">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleResume(template.id)}
-                          disabled={isResuming}
-                        >
-                          <MdPlayArrow className="h-4 w-4 mr-1" />
-                          Reativar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => handleDelete(template.id)}
-                          disabled={isDeleting}
-                        >
-                          <MdDelete className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+          {/* Installments Tab */}
+          <TabsContent value="installments" className="space-y-4">
+            <InstallmentsList
+              templates={installmentTemplates}
+              hasInactiveTemplates={hasInactiveTemplates}
+              showInactive={showInactive}
+              onToggleInactive={() => setShowInactive(!showInactive)}
+              onActivateTemplate={activateTemplate}
+              onDeactivateTemplate={deactivateTemplate}
+              onDeleteTemplate={handleDeleteTemplate}
+              isActivating={isActivating}
+              isDeactivating={isDeactivating}
+              isDeleting={isDeleting}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

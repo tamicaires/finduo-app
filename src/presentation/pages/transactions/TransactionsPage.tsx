@@ -12,8 +12,7 @@ import { TransactionFilters, type TransactionFiltersState } from '@presentation/
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import { TransactionCategoryLabels } from '@core/enums/TransactionCategory'
 import { formatCurrency } from '@shared/utils/format-currency'
-import type { RegisterTransactionDto, TransactionFiltersDto } from '@infrastructure/repositories/transaction.repository'
-import type { RegisterInstallmentTransactionDto, RegisterRecurringTransactionDto } from '@infrastructure/repositories/transaction.repository'
+import type { TransactionFiltersDto } from '@infrastructure/repositories/transaction.repository'
 import type { TransactionMode } from '@core/types/transaction-mode'
 
 export function TransactionsPage() {
@@ -40,8 +39,6 @@ export function TransactionsPage() {
     deleteTransaction,
     updateFreeSpending,
     isRegistering,
-    isRegisteringInstallment,
-    isRegisteringRecurring,
     isDeleting,
     isUpdatingFreeSpending,
   } = useTransactions(apiFilters)

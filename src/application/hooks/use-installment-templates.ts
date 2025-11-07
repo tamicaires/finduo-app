@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@infrastructure/api/client';
-import { API_ROUTES, QUERY_KEYS } from '@shared/constants';
+import { apiClient } from '@infrastructure/http/api-client';
 import { toast } from 'react-hot-toast';
+import { QUERY_KEYS } from '@/shared/constants/app-config';
 
 export interface InstallmentTemplate {
   id: string;
@@ -38,34 +38,28 @@ interface PayInstallmentInput {
   transaction_date?: string;
 }
 
-export function useInstallmentTemplates() {
+export function useInstallmentTemplates(showInactive: boolean = false) {
   const queryClient = useQueryClient();
 
-  // Fetch all templates
+  // Fetch templates with pagination and filtering
   const { data: templatesResponse, isLoading: isLoadingTemplates } = useQuery({
-    queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES],
+    queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES, showInactive ? 'all' : 'active'],
     queryFn: async () => {
-      const response = await apiClient.get<{ data: InstallmentTemplate[], nextCursor: string | null }>(
-        '/installments/templates'
-      );
+      // Use showInactive parameter to get all or just active
+      const params: any = { limit: 20 };
+      if (showInactive) {
+        params.showInactive = 'true';
+      }
+
+      const response = await apiClient.get<any>('/installments/templates', { params });
+
+      // Response structure: { data: [], nextCursor, hasMore, hasInactiveTemplates }
       return response.data;
     },
   });
 
-  const templates = templatesResponse?.data || [];
-
-  // Fetch active templates
-  const { data: activeTemplatesResponse } = useQuery({
-    queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES, 'active'],
-    queryFn: async () => {
-      const response = await apiClient.get<InstallmentTemplate[]>(
-        '/installments/templates/active'
-      );
-      return response.data;
-    },
-  });
-
-  const activeTemplates = activeTemplatesResponse || [];
+  const templates = Array.isArray(templatesResponse?.data) ? templatesResponse.data : [];
+  const hasInactiveTemplates = templatesResponse?.hasInactiveTemplates || false;
 
   // Deactivate template
   const deactivateMutation = useMutation({
@@ -112,7 +106,7 @@ export function useInstallmentTemplates() {
 
   return {
     templates,
-    activeTemplates,
+    hasInactiveTemplates,
     isLoading: isLoadingTemplates,
     deactivateTemplate: deactivateMutation.mutate,
     activateTemplate: activateMutation.mutate,

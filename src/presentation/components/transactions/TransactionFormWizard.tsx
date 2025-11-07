@@ -3,12 +3,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { MdSwapHoriz, MdAccountBalanceWallet, MdAttachMoney, MdLabel, MdCalendarToday, MdDescription, MdInfo, MdArrowBack } from 'react-icons/md'
+import { MdSwapHoriz, MdAccountBalanceWallet, MdAttachMoney, MdCalendarToday, MdDescription, MdInfo, MdArrowBack } from 'react-icons/md'
 import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
 import { InputField } from '@presentation/components/form/InputField'
 import { SelectField } from '@presentation/components/form/SelectField'
+import { CategorySelect } from '@presentation/components/form/CategorySelect'
 import { SwitchField } from '@presentation/components/form/SwitchField'
 import { RadioGroupField } from '@presentation/components/form/RadioGroupField'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
@@ -23,7 +24,6 @@ import { RecurrenceFrequency } from '@core/enums/RecurrenceFrequency'
 import type { TransactionMode } from '@core/types/transaction-mode'
 import type { Account } from '@core/entities/Account'
 import { categoryService } from '@/application/services/category.service'
-import { getIconComponent } from '@/shared/utils/icon-mapper'
 import { useDashboard } from '@application/hooks/use-dashboard'
 
 const baseTransactionFields = {
@@ -154,7 +154,7 @@ export function TransactionFormWizard({
   }, [selectedMode])
 
   // Buscar categorias
-  const { data: categories, isLoading: loadingCategories } = useQuery({
+  const { data: categories, isLoading: loadingCategories, refetch: refetchCategories } = useQuery({
     queryKey: ['categories', selectedType],
     queryFn: () => categoryService.getAll(selectedType!),
     enabled: !!selectedType && step === 'form',
@@ -192,11 +192,6 @@ export function TransactionFormWizard({
     onSubmit({ ...cleanData, visibility }, selectedMode)
   }
 
-  const categoryOptions = (categories || []).map((category) => ({
-    value: category.id,
-    label: category.name,
-    icon: getIconComponent(category.icon) || undefined,
-  }))
 
   const accountOptions = (Array.isArray(accounts) ? accounts : []).map((account) => ({
     value: account.id,
@@ -328,14 +323,15 @@ export function TransactionFormWizard({
                   />
                 )}
 
-                <SelectField
+                <CategorySelect
                   name="category_id"
                   label="Categoria"
-                  placeholder={loadingCategories ? "Carregando..." : "Selecione"}
-                  options={categoryOptions}
-                  icon={MdLabel}
-                  searchable
+                  placeholder={loadingCategories ? "Carregando..." : "Selecione uma categoria"}
+                  categories={categories || []}
                   disabled={loadingCategories}
+                  transactionType={selectedType!}
+                  onCategoryCreated={() => refetchCategories()}
+                  isLoading={loadingCategories}
                 />
 
                 <InputField
