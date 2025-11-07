@@ -45,7 +45,12 @@ export function TransactionTypeSelector({ value, onChange }: TransactionTypeSele
               label: 'text-red-700 dark:text-red-400',
               hover: 'hover:border-red-300',
             },
-          }[type.color]
+          }[type.color] || {
+            selected: 'border-border bg-background',
+            icon: 'bg-muted text-muted-foreground',
+            label: 'text-foreground',
+            hover: 'hover:border-primary',
+          }
 
           return (
             <button

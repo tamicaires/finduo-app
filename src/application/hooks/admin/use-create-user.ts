@@ -16,8 +16,9 @@ export function useCreateUser() {
       toast.success('Usuário criado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Erro ao criar usuário';
+    onError: (error: unknown) => {
+      const errorObj = error as { response?: { data?: { message?: string } } };
+      const errorMessage = errorObj.response?.data?.message || 'Erro ao criar usuário';
       toast.error(errorMessage);
     },
   });

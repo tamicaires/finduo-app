@@ -164,13 +164,11 @@ export function useInputFormatter<T extends FieldValues = FieldValues>({
       const input = event.target.value
       const processedValue = processValue(input, type)
 
-      if (processedValue !== undefined) {
-        form.setValue(name, processedValue as never, {
+      form.setValue(name, processedValue as never, {
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
         })
-      }
     },
     [form, name, type, processValue]
   )

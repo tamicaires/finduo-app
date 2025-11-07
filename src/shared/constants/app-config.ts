@@ -11,4 +11,8 @@ export const QUERY_KEYS = {
   ACCOUNTS: 'accounts',
   TRANSACTIONS: 'transactions',
   USER: 'user',
+  RECURRING_TEMPLATES: 'recurring-templates',
+  RECURRING_OCCURRENCES: 'recurring-occurrences',
+  INSTALLMENT_TEMPLATES: 'installment-templates',
+  INSTALLMENTS: 'installments',
 } as const

@@ -12,8 +12,12 @@ import { TransactionFilters, type TransactionFiltersState } from '@presentation/
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import { TransactionCategoryLabels } from '@core/enums/TransactionCategory'
 import { formatCurrency } from '@shared/utils/format-currency'
-import type { RegisterTransactionDto, TransactionFiltersDto } from '@infrastructure/repositories/transaction.repository'
-import type { RegisterInstallmentTransactionDto, RegisterRecurringTransactionDto } from '@infrastructure/repositories/transaction.repository'
+import type {
+  TransactionFiltersDto,
+  RegisterTransactionDto,
+  RegisterInstallmentTransactionDto,
+  RegisterRecurringTransactionDto
+} from '@infrastructure/repositories/transaction.repository'
 import type { TransactionMode } from '@core/types/transaction-mode'
 
 export function TransactionsPage() {
@@ -40,15 +44,16 @@ export function TransactionsPage() {
     deleteTransaction,
     updateFreeSpending,
     isRegistering,
-    isRegisteringInstallment,
-    isRegisteringRecurring,
     isDeleting,
     isUpdatingFreeSpending,
   } = useTransactions(apiFilters)
 
   const { accounts } = useAccounts()
 
-  const handleRegister = (data: any, mode: TransactionMode) => {
+  const handleRegister = (
+    data: RegisterTransactionDto | RegisterInstallmentTransactionDto | RegisterRecurringTransactionDto,
+    mode: TransactionMode
+  ) => {
     const onSuccess = () => {
       setIsDialogOpen(false)
       const messages = { simple: 'Transação registrada!', installment: 'Transação parcelada criada!', recurring: 'Transação recorrente criada!' }
@@ -56,11 +61,11 @@ export function TransactionsPage() {
     }
     const onError = () => { toast.error('Erro ao registrar transação') }
     if (mode === 'installment') {
-      registerInstallmentTransaction(data, { onSuccess, onError })
+      registerInstallmentTransaction(data as RegisterInstallmentTransactionDto, { onSuccess, onError })
     } else if (mode === 'recurring') {
-      registerRecurringTransaction(data, { onSuccess, onError })
+      registerRecurringTransaction(data as RegisterRecurringTransactionDto, { onSuccess, onError })
     } else {
-      registerTransaction(data, { onSuccess, onError })
+      registerTransaction(data as RegisterTransactionDto, { onSuccess, onError })
     }
   }
 

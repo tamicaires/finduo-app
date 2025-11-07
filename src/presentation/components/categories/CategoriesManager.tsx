@@ -37,7 +37,7 @@ export function CategoriesManager() {
       setIsLoading(true)
       const response = await apiClient.get(API_ROUTES.LIST_CATEGORIES)
       setCategories(response.data.categories)
-    } catch (err) {
+    } catch {
       toast.error('Erro ao carregar categorias')
     } finally {
       setIsLoading(false)
@@ -63,7 +63,7 @@ export function CategoriesManager() {
       setFormColor('#f59e0b')
       setFormType('EXPENSE')
       await fetchCategories()
-    } catch (err) {
+    } catch {
       toast.error('Erro ao criar categoria')
     } finally {
       setIsCreating(false)
@@ -84,7 +84,7 @@ export function CategoriesManager() {
       await apiClient.delete(API_ROUTES.DELETE_CATEGORY(id))
       toast.success('Categoria excluída com sucesso!')
       await fetchCategories()
-    } catch (err) {
+    } catch {
       toast.error('Erro ao excluir categoria')
     }
   }
@@ -138,7 +138,7 @@ export function CategoriesManager() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="cat-type">Tipo</Label>
-              <Select value={formType} onValueChange={(v) => setFormType(v as any)}>
+              <Select value={formType} onValueChange={(v) => setFormType(v as 'INCOME' | 'EXPENSE' | 'BOTH')}>
                 <SelectTrigger id="cat-type">
                   <SelectValue />
                 </SelectTrigger>

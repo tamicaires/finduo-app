@@ -63,8 +63,9 @@ export function CreateCoupleDialog({ open, onOpenChange, onSuccess }: CreateCoup
 
       setInviteLink(response.data.invite.invite_link)
       toast.success('Convite criado com sucesso!')
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erro ao criar convite'
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } }
+      const errorMessage = err.response?.data?.message || 'Erro ao criar convite'
       toast.error(errorMessage)
     } finally {
       setIsLoading(false)

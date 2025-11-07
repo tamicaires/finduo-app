@@ -32,8 +32,6 @@ export function LinkCoupleDialog({ isOpen, onClose, onConfirm }: LinkCoupleDialo
   const [loadingA, setLoadingA] = useState(false);
   const [loadingB, setLoadingB] = useState(false);
 
-  if (!isOpen) return null;
-
   const searchUsers = async (query: string, setUsers: (users: UserSearchResult[]) => void, setLoading: (loading: boolean) => void) => {
     if (query.length < 2) {
       setUsers([]);
@@ -42,7 +40,7 @@ export function LinkCoupleDialog({ isOpen, onClose, onConfirm }: LinkCoupleDialo
 
     setLoading(true);
     try {
-      const response = await apiClient.get<any>(
+      const response = await apiClient.get<{ users: UserSearchResult[] }>(
         `${API_ROUTES.ADMIN_LIST_USERS}?search=${encodeURIComponent(query)}&limit=5`
       );
       setUsers(response.data.users.filter((u: UserSearchResult) => !u.has_couple));
@@ -67,6 +65,8 @@ export function LinkCoupleDialog({ isOpen, onClose, onConfirm }: LinkCoupleDialo
     return () => clearTimeout(timer);
   }, [searchB]);
 
+  if (!isOpen) return null;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -85,8 +85,9 @@ export function LinkCoupleDialog({ isOpen, onClose, onConfirm }: LinkCoupleDialo
     try {
       await onConfirm(userAId, userBId, reason || undefined);
       handleClose();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erro ao vincular casal');
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error?.response?.data?.message || 'Erro ao vincular casal');
     } finally {
       setIsSubmitting(false);
     }

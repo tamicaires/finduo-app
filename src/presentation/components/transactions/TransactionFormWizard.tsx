@@ -3,12 +3,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { MdSwapHoriz, MdAccountBalanceWallet, MdAttachMoney, MdLabel, MdCalendarToday, MdDescription, MdInfo, MdArrowBack } from 'react-icons/md'
+import { MdSwapHoriz, MdAccountBalanceWallet, MdAttachMoney, MdCalendarToday, MdDescription, MdInfo, MdArrowBack } from 'react-icons/md'
 import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
 import { InputField } from '@presentation/components/form/InputField'
 import { SelectField } from '@presentation/components/form/SelectField'
+import { CategorySelect } from '@presentation/components/form/CategorySelect'
 import { SwitchField } from '@presentation/components/form/SwitchField'
 import { RadioGroupField } from '@presentation/components/form/RadioGroupField'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
@@ -23,7 +24,6 @@ import { RecurrenceFrequency } from '@core/enums/RecurrenceFrequency'
 import type { TransactionMode } from '@core/types/transaction-mode'
 import type { Account } from '@core/entities/Account'
 import { categoryService } from '@/application/services/category.service'
-import { getIconComponent } from '@/shared/utils/icon-mapper'
 import { useDashboard } from '@application/hooks/use-dashboard'
 
 const baseTransactionFields = {
@@ -61,10 +61,14 @@ const recurringTransactionSchema = z.object({
   create_first_transaction: z.boolean().default(true),
 })
 
+type SimpleTransactionFormData = z.infer<typeof simpleTransactionSchema>
+type InstallmentTransactionFormData = z.infer<typeof installmentTransactionSchema>
+type RecurringTransactionFormData = z.infer<typeof recurringTransactionSchema>
+
 interface TransactionFormWizardProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: any, mode: TransactionMode) => void
+  onSubmit: (data: SimpleTransactionFormData | InstallmentTransactionFormData | RecurringTransactionFormData, mode: TransactionMode) => void
   accounts?: Account[]
   isLoading?: boolean
 }
@@ -154,7 +158,7 @@ export function TransactionFormWizard({
   }, [selectedMode])
 
   // Buscar categorias
-  const { data: categories, isLoading: loadingCategories } = useQuery({
+  const { data: categories, isLoading: loadingCategories, refetch: refetchCategories } = useQuery({
     queryKey: ['categories', selectedType],
     queryFn: () => categoryService.getAll(selectedType!),
     enabled: !!selectedType && step === 'form',
@@ -178,25 +182,26 @@ export function TransactionFormWizard({
     }
   }
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: SimpleTransactionFormData | InstallmentTransactionFormData | RecurringTransactionFormData) => {
     const visibility = data.is_free_spending ? 'FREE_SPENDING' : data.visibility
 
-    // Remove campos de controle que não devem ir para o backend
-    const { has_end_date, ...cleanData } = data
-
-    // Se não tem end_date, remove do payload
-    if (!has_end_date || !cleanData.end_date) {
-      delete cleanData.end_date
+    // Remove campos de controle que não devem ir para o backend (apenas para RecurringTransactionFormData)
+    if ('has_end_date' in data) {
+      const { has_end_date, ...cleanData } = data
+      // Se não tem end_date, remove do payload
+      if (!has_end_date || !cleanData.end_date) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { end_date, ...finalData } = cleanData
+        onSubmit({ ...finalData, visibility } as RecurringTransactionFormData, selectedMode)
+        return
+      }
+      onSubmit({ ...cleanData, visibility } as RecurringTransactionFormData, selectedMode)
+      return
     }
 
-    onSubmit({ ...cleanData, visibility }, selectedMode)
+    onSubmit({ ...data, visibility }, selectedMode)
   }
 
-  const categoryOptions = (categories || []).map((category) => ({
-    value: category.id,
-    label: category.name,
-    icon: getIconComponent(category.icon) || undefined,
-  }))
 
   const accountOptions = (Array.isArray(accounts) ? accounts : []).map((account) => ({
     value: account.id,
@@ -224,13 +229,14 @@ export function TransactionFormWizard({
         return 'Nova Transação'
       case 'mode':
         return selectedType === TransactionType.INCOME ? 'Como deseja registrar a receita?' : 'Como deseja registrar a despesa?'
-      case 'form':
+      case 'form': {
         const modeLabels = {
           simple: 'Transação Simples',
           installment: 'Transação Parcelada',
           recurring: 'Transação Recorrente',
         }
         return modeLabels[selectedMode]
+      }
     }
   }
 
@@ -328,14 +334,15 @@ export function TransactionFormWizard({
                   />
                 )}
 
-                <SelectField
+                <CategorySelect
                   name="category_id"
                   label="Categoria"
-                  placeholder={loadingCategories ? "Carregando..." : "Selecione"}
-                  options={categoryOptions}
-                  icon={MdLabel}
-                  searchable
+                  placeholder={loadingCategories ? "Carregando..." : "Selecione uma categoria"}
+                  categories={categories || []}
                   disabled={loadingCategories}
+                  transactionType={selectedType!}
+                  onCategoryCreated={() => refetchCategories()}
+                  isLoading={loadingCategories}
                 />
 
                 <InputField

@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import { apiClient } from '@infrastructure/http/api-client'
 import { API_ROUTES } from '@shared/constants/api-routes'
 
+interface ApiErrorResponse {
+  message: string
+}
+
 interface GameProfile {
   profile: {
     id: string
@@ -31,9 +35,10 @@ export function useGameProfile() {
       setError(null)
       const response = await apiClient.get<GameProfile>(API_ROUTES.GET_GAME_PROFILE)
       setGameProfile(response.data)
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching game profile:', err)
-      const errorMessage = err?.response?.data?.message || err?.message || 'Erro desconhecido'
+      const error = err as { response?: { data?: ApiErrorResponse }; message?: string }
+      const errorMessage = error?.response?.data?.message || error?.message || 'Erro desconhecido'
       setError(`Erro ao carregar perfil: ${errorMessage}`)
     } finally {
       setIsLoading(false)

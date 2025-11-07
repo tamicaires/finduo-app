@@ -13,14 +13,12 @@ import { Button } from '@presentation/components/ui/button';
 import { Form } from '@presentation/components/ui/form';
 import { InputField } from '@presentation/components/form/InputField';
 import { SelectField } from '@presentation/components/form/SelectField';
-import { useAdminCouples, useAssignPlan } from '@application/hooks/use-admin';
-import { useDebounce } from '@application/hooks/useDebounce';
+import { useAdminCouples, useAssignPlan } from '@application/hooks/admin';
+import type { User } from '@application/hooks/admin/types';
 
 const assignPlanSchema = z.object({
   couple_id: z.string().min(1, 'Selecione um casal'),
-  plan_name: z.enum(['FREE', 'PREMIUM', 'UNLIMITED'], {
-    required_error: 'Selecione um plano',
-  }),
+  plan_name: z.enum(['FREE', 'PREMIUM', 'UNLIMITED'] as const),
   duration_type: z.enum(['unlimited', 'days']),
   duration_days: z.number().optional(),
   reason: z.string().optional(),
@@ -35,9 +33,8 @@ interface AssignPlanDialogProps {
 
 export function AssignPlanDialog({ open, onOpenChange }: AssignPlanDialogProps) {
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 500);
 
-  const { data: couples, isLoading: loadingCouples } = useAdminCouples({ search: debouncedSearch });
+  const { data: couples, isLoading: loadingCouples } = useAdminCouples({ search });
   const { assignPlan, isAssigningPlan } = useAssignPlan();
 
   const form = useForm<AssignPlanForm>({
@@ -55,9 +52,9 @@ export function AssignPlanDialog({ open, onOpenChange }: AssignPlanDialogProps) 
 
   const coupleOptions = useMemo(() => {
     if (!couples?.couples) return [];
-    return couples.couples.map((couple: any) => ({
-      value: couple.id,
-      label: `${couple.user1_name} & ${couple.user2_name || 'Pendente'}`,
+    return couples.couples.map((couple: User) => ({
+      value: couple.couple_id || couple.id,
+      label: `${couple.name} & ${couple.partner_name || 'Pendente'}`,
     }));
   }, [couples]);
 

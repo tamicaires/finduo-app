@@ -51,7 +51,7 @@ export function SettingsPage() {
       setResetDay(response.data.couple.reset_day)
       setMyFreeSpending(response.data.currentUser.free_spending_monthly)
       setPartnerFreeSpending(response.data.partner.free_spending_monthly)
-    } catch (err) {
+    } catch {
       toast.error('Erro ao carregar configurações')
     } finally {
       setIsFetching(false)
@@ -65,7 +65,7 @@ export function SettingsPage() {
         reset_day: resetDay,
       })
       toast.success('Configurações salvas com sucesso!')
-    } catch (err) {
+    } catch {
       toast.error('Erro ao salvar configurações')
     } finally {
       setIsLoading(false)
@@ -80,7 +80,7 @@ export function SettingsPage() {
       })
       toast.success('Seu limite de gasto livre atualizado com sucesso!')
       await fetchCoupleInfo()
-    } catch (err) {
+    } catch {
       toast.error('Erro ao atualizar seu limite de gasto livre')
     } finally {
       setIsLoading(false)

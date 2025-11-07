@@ -16,8 +16,9 @@ export function useLinkCouple() {
       toast.success('Casal vinculado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Erro ao vincular casal';
+    onError: (error: unknown) => {
+      const errorObj = error as { response?: { data?: { message?: string } } };
+      const errorMessage = errorObj.response?.data?.message || 'Erro ao vincular casal';
       toast.error(errorMessage);
     },
   });

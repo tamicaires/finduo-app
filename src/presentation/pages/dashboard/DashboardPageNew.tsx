@@ -16,7 +16,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 // Helper para pegar nome da categoria (objeto Category ou enum TransactionCategory)
-function getCategoryName(category: any): string {
+function getCategoryName(category: { name: string } | string | null | undefined): string {
   if (!category) return 'Sem categoria'
   if (typeof category === 'object' && 'name' in category) {
     return category.name

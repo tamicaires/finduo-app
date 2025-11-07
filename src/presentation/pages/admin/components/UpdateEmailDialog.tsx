@@ -46,7 +46,7 @@ export function UpdateEmailDialog({
     try {
       await onConfirm(newEmail, reason || undefined);
       handleClose();
-    } catch (err) {
+    } catch {
       setError('Erro ao atualizar email');
     } finally {
       setIsSubmitting(false);
