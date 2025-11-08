@@ -29,6 +29,8 @@ import {
 import { LoadingSpinner } from "@presentation/components/shared/LoadingSpinner";
 import { AccountFormDialog } from "@presentation/components/accounts/AccountFormDialog";
 import { AccountVisibilityDialog } from "@presentation/components/accounts/AccountVisibilityDialog";
+import { DeleteAccountDialog } from "@presentation/components/accounts/DeleteAccountDialog";
+import { useDeleteAccountDialogStore } from "@presentation/stores/use-delete-account-dialog";
 import { AccountType, AccountTypeLabels } from "@core/enums/AccountType";
 import { formatCurrency } from "@shared/utils/format-currency";
 import type { Account } from "@core/entities/Account";
@@ -39,16 +41,16 @@ export function AccountsPage() {
   const [isVisibilityDialogOpen, setIsVisibilityDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | undefined>();
 
+  const { openDialog: openDeleteDialog } = useDeleteAccountDialogStore();
+
   const {
     accounts,
     isLoading,
     createAccount,
     updateAccount,
-    deleteAccount,
     toggleVisibility,
     isCreating,
     isUpdating,
-    isDeleting,
     isTogglingVisibility,
   } = useAccounts();
 
@@ -84,17 +86,8 @@ export function AccountsPage() {
     );
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir esta conta?")) {
-      deleteAccount(id, {
-        onSuccess: () => {
-          toast.success("Conta excluída com sucesso!");
-        },
-        onError: () => {
-          toast.error("Erro ao excluir conta");
-        },
-      });
-    }
+  const handleDelete = (account: Account) => {
+    openDeleteDialog(account.id, account.name);
   };
 
   const handleOpenDialog = (account?: Account) => {
@@ -268,7 +261,7 @@ export function AccountsPage() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 md:h-8 md:w-8"
-                            disabled={isDeleting || isTogglingVisibility}
+                            disabled={isTogglingVisibility}
                           >
                             <HiDotsVertical className="h-4 w-4" />
                           </Button>
@@ -288,7 +281,7 @@ export function AccountsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            onClick={() => handleDelete(account.id)}
+                            onClick={() => handleDelete(account)}
                             className="text-red-600 focus:text-red-600"
                           >
                             <HiTrash className="mr-2 h-4 w-4" />
@@ -329,6 +322,8 @@ export function AccountsPage() {
           onConfirm={handleToggleVisibility}
           isPending={isTogglingVisibility}
         />
+
+        <DeleteAccountDialog />
       </div>
     </div>
   );
