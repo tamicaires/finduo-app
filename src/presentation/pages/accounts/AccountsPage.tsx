@@ -178,7 +178,7 @@ export function AccountsPage() {
 
         {/* Card de Saldo Total - Mobile otimizado */}
         <div className="mb-4 md:mb-6">
-          <Card className="bg-gradient-to-br from-primary to-orange-600 text-white border-0">
+          <Card className="bg-primary text-white border-0">
             <CardHeader className="pb-2 md:pb-3">
               <CardTitle className="text-xs md:text-sm font-medium text-orange-100 flex items-center gap-2">
                 <MdWallet className="h-4 w-4" />

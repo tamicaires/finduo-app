@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { BiSearch } from 'react-icons/bi'
 import { TbArrowDownRight, TbArrowUpRight } from 'react-icons/tb'
 import { BsCalendar4Week, BsCreditCard2Front } from 'react-icons/bs'
-import { MdAddCircleOutline, MdRemoveCircleOutline, MdBarChart, MdFlag } from 'react-icons/md'
+import { MdAddCircleOutline, MdRemoveCircleOutline, MdBarChart, MdFlag, MdPeople, MdPerson } from 'react-icons/md'
 import { Input } from '@presentation/components/ui/input'
 import { Card } from '@presentation/components/ui/card'
 import { useDashboard } from '@application/hooks/use-dashboard'
@@ -53,12 +53,17 @@ export function DashboardPageNew() {
     )
   }
 
+  // Calcular totais somando contas conjuntas + pessoais
+  const totalBalance = (dashboardData?.couple_finances.balance || 0) + (dashboardData?.my_personal_finances.balance || 0)
+  const totalIncome = (dashboardData?.couple_finances.monthly_income || 0) + (dashboardData?.my_personal_finances.monthly_income || 0)
+  const totalExpenses = (dashboardData?.couple_finances.monthly_expenses || 0) + (dashboardData?.my_personal_finances.monthly_expenses || 0)
+
   // Preparar dados reais para o gráfico de Analytics (últimos 8 meses)
   const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago']
   const analyticsData = months.map((month) => ({
     month,
-    income: (dashboardData?.monthly_income || 0) * (0.8 + Math.random() * 0.4),
-    outcome: (dashboardData?.monthly_expenses || 0) * (0.8 + Math.random() * 0.4),
+    income: totalIncome * (0.8 + Math.random() * 0.4),
+    outcome: totalExpenses * (0.8 + Math.random() * 0.4),
   }))
 
   // Preparar dados de categorias para Activity
@@ -72,7 +77,7 @@ export function DashboardPageNew() {
       return acc
     }, {} as Record<string, number>)
 
-  const totalExpenses = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0)
+  const totalCategoryExpenses = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0)
   const topCategories = Object.entries(categoryTotals)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3)
@@ -80,7 +85,7 @@ export function DashboardPageNew() {
   const colors = ['hsl(var(--primary))', 'hsl(190 80% 50%)', 'hsl(var(--muted))']
   const activityData = topCategories.map(([name, amount], idx) => ({
     name,
-    value: Math.round((amount / totalExpenses) * 100),
+    value: Math.round((amount / totalCategoryExpenses) * 100),
     color: colors[idx],
   }))
 
@@ -113,19 +118,52 @@ export function DashboardPageNew() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Left Column - Analytics + Transactions */}
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          {/* Mobile: Card de Saldo primeiro (estilo Nubank/Inter) */}
-          <div className="block lg:hidden space-y-4">
-            <Card className="p-5 bg-gradient-to-br from-primary to-orange-600 text-white border-0">
-              <p className="text-orange-100 text-xs mb-1">Saldo disponível</p>
-              <h2 className="text-3xl font-bold mb-4">{formatCurrency(dashboardData?.total_balance || 0)}</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-orange-100 text-xs mb-1">Receitas</p>
-                  <p className="text-lg font-semibold">{formatCurrency(dashboardData?.monthly_income || 0)}</p>
+          {/* Mobile: Cards de Saldo (Contas Conjuntas + Pessoais) */}
+          <div className="block lg:hidden space-y-3">
+            {/* Contas Conjuntas */}
+            <Card className="p-4 bg-card border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <MdPeople className="text-xl text-primary" />
                 </div>
                 <div>
-                  <p className="text-orange-100 text-xs mb-1">Despesas</p>
-                  <p className="text-lg font-semibold">{formatCurrency(dashboardData?.monthly_expenses || 0)}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Contas Conjuntas</p>
+                  <p className="text-xs text-muted-foreground">Finanças do casal</p>
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold mb-3">{formatCurrency(dashboardData?.couple_finances.balance || 0)}</h3>
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Receitas</p>
+                  <p className="text-base font-semibold text-green-600">{formatCurrency(dashboardData?.couple_finances.monthly_income || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Despesas</p>
+                  <p className="text-base font-semibold text-red-600">{formatCurrency(dashboardData?.couple_finances.monthly_expenses || 0)}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Minhas Contas Pessoais */}
+            <Card className="p-4 bg-primary/10 border-primary/20">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/30 flex items-center justify-center">
+                  <MdPerson className="text-xl text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-foreground">Minhas Contas Pessoais</p>
+                  <p className="text-xs text-muted-foreground">Finanças privadas</p>
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold mb-3">{formatCurrency(dashboardData?.my_personal_finances.balance || 0)}</h3>
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-primary/20">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Receitas</p>
+                  <p className="text-base font-semibold text-green-600">{formatCurrency(dashboardData?.my_personal_finances.monthly_income || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Despesas</p>
+                  <p className="text-base font-semibold text-red-600">{formatCurrency(dashboardData?.my_personal_finances.monthly_expenses || 0)}</p>
                 </div>
               </div>
             </Card>
@@ -175,7 +213,7 @@ export function DashboardPageNew() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-muted-foreground text-xs md:text-sm mb-2">Receitas Totais</p>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2">{formatCurrency(dashboardData?.monthly_income || 0)}</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold mb-2">{formatCurrency(totalIncome)}</h2>
                   <span className="text-green-500 text-xs md:text-sm">+12,5%</span>
                 </div>
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center">
@@ -189,7 +227,7 @@ export function DashboardPageNew() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-muted-foreground text-xs md:text-sm mb-2">Despesas Totais</p>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2">{formatCurrency(dashboardData?.monthly_expenses || 0)}</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold mb-2">{formatCurrency(totalExpenses)}</h2>
                   <span className="text-red-500 text-xs md:text-sm">+8,3%</span>
                 </div>
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
@@ -345,32 +383,59 @@ export function DashboardPageNew() {
           </Card>
         </div>
 
-        {/* Right Column - My Card + Activity */}
+        {/* Right Column - Financial Summary + Activity */}
         <div className="space-y-4 md:space-y-6">
-          {/* My Card */}
+          {/* Financial Summary Card */}
           <Card className="p-4 md:p-6 bg-card border-border">
-            <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Meu Cartão</h3>
+            <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Resumo Financeiro</h3>
 
-            {/* Card Balance */}
+            {/* Total Balance Display */}
             <div className="mb-3 md:mb-4">
-              <p className="text-muted-foreground text-xs md:text-sm mb-1">Saldo Total</p>
-              <h2 className="text-2xl md:text-3xl font-bold">{formatCurrency(dashboardData?.total_balance || 0)}</h2>
+              <p className="text-muted-foreground text-xs md:text-sm mb-1">Saldo Total Combinado</p>
+              <h2 className="text-2xl md:text-3xl font-bold">{formatCurrency(totalBalance)}</h2>
             </div>
 
-            {/* Credit Card */}
-            <div className="bg-gradient-to-br from-primary to-orange-600 rounded-2xl p-5 md:p-6 text-white mb-3 md:mb-4">
-              <div className="mb-6 md:mb-8">
-                <p className="text-orange-100 text-xs md:text-sm mb-2">Saldo Atual</p>
-                <h3 className="text-2xl md:text-3xl font-bold">{formatCurrency(dashboardData?.total_balance || 0)}</h3>
+            {/* Visual Cards - Contas Separadas */}
+            <div className="space-y-3 mb-3 md:mb-4">
+              {/* Contas Conjuntas Card */}
+              <div className="bg-card border border-border rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <MdPeople className="text-base text-primary" />
+                  </div>
+                  <p className="text-xs font-medium text-muted-foreground">Contas Conjuntas</p>
+                </div>
+                <h3 className="text-xl font-bold mb-2">{formatCurrency(dashboardData?.couple_finances.balance || 0)}</h3>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <p className="text-muted-foreground">Receitas</p>
+                    <p className="font-semibold text-green-600">{formatCurrency(dashboardData?.couple_finances.monthly_income || 0)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Despesas</p>
+                    <p className="font-semibold text-red-600">{formatCurrency(dashboardData?.couple_finances.monthly_expenses || 0)}</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-orange-100 text-xs mb-1">5282 3456 7890 1289</p>
+              {/* Contas Pessoais Card */}
+              <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/30 flex items-center justify-center">
+                    <MdPerson className="text-base text-primary" />
+                  </div>
+                  <p className="text-xs font-medium text-foreground">Minhas Contas Pessoais</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-orange-100 text-xs mb-1">09/25</p>
-                  <div className="text-white font-bold text-xs md:text-sm">mastercard</div>
+                <h3 className="text-xl font-bold mb-2">{formatCurrency(dashboardData?.my_personal_finances.balance || 0)}</h3>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <p className="text-muted-foreground">Receitas</p>
+                    <p className="font-semibold text-green-600">{formatCurrency(dashboardData?.my_personal_finances.monthly_income || 0)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Despesas</p>
+                    <p className="font-semibold text-red-600">{formatCurrency(dashboardData?.my_personal_finances.monthly_expenses || 0)}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -381,7 +446,7 @@ export function DashboardPageNew() {
                 onClick={() => navigate('/accounts')}
                 className="py-2.5 md:py-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm md:text-base hover:bg-primary/90 transition-colors"
               >
-                Gerenciar Cartões
+                Gerenciar Contas
               </button>
               <button
                 onClick={() => navigate('/transactions')}

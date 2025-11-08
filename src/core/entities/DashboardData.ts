@@ -6,10 +6,18 @@ export interface DashboardData {
     allow_private_transactions: boolean
     financial_model: string
   }
-  total_balance: number
-  monthly_income: number
-  monthly_expenses: number
-  couple_expenses: number
+  couple_finances: {
+    balance: number
+    monthly_income: number
+    monthly_expenses: number
+    couple_expenses: number
+  }
+  my_personal_finances: {
+    balance: number
+    monthly_income: number
+    monthly_expenses: number
+    couple_expenses: number
+  }
   free_spending: {
     user_a: {
       monthly: number
