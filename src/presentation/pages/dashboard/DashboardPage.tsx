@@ -29,6 +29,11 @@ export function DashboardPage() {
     )
   }
 
+  // Calcular totais somando contas conjuntas + pessoais
+  const totalBalance = (dashboardData?.couple_finances.balance || 0) + (dashboardData?.my_personal_finances.balance || 0)
+  const totalIncome = (dashboardData?.couple_finances.monthly_income || 0) + (dashboardData?.my_personal_finances.monthly_income || 0)
+  const totalExpenses = (dashboardData?.couple_finances.monthly_expenses || 0) + (dashboardData?.my_personal_finances.monthly_expenses || 0)
+
   // Preparar dados para o gráfico mensal (últimos 6 meses)
   const monthlyData = [
     { month: 'Ago', income: 11000, expenses: 7500 },
@@ -36,7 +41,7 @@ export function DashboardPage() {
     { month: 'Out', income: 11200, expenses: 7800 },
     { month: 'Nov', income: 10800, expenses: 8500 },
     { month: 'Dez', income: 12000, expenses: 9200 },
-    { month: 'Jan', income: dashboardData?.monthly_income || 0, expenses: dashboardData?.monthly_expenses || 0 },
+    { month: 'Jan', income: totalIncome, expenses: totalExpenses },
   ]
 
   // Preparar dados para o gráfico de categorias
@@ -56,9 +61,9 @@ export function DashboardPage() {
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 8)
 
-  const netBalance = (dashboardData?.monthly_income || 0) - (dashboardData?.monthly_expenses || 0)
-  const savingsRate = dashboardData?.monthly_income
-    ? ((netBalance / dashboardData.monthly_income) * 100).toFixed(1)
+  const netBalance = totalIncome - totalExpenses
+  const savingsRate = totalIncome
+    ? ((netBalance / totalIncome) * 100).toFixed(1)
     : '0'
 
   return (
@@ -78,7 +83,7 @@ export function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <StatCard
             title="Saldo Total"
-            value={`R$ ${(dashboardData?.total_balance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+            value={`R$ ${totalBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
             description="Soma de todas as contas"
             icon={Wallet}
             variant="info"
@@ -86,7 +91,7 @@ export function DashboardPage() {
 
           <StatCard
             title="Receitas do Mês"
-            value={`R$ ${(dashboardData?.monthly_income || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+            value={`R$ ${totalIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
             description="Total de entradas"
             icon={TrendingUp}
             variant="success"
@@ -98,7 +103,7 @@ export function DashboardPage() {
 
           <StatCard
             title="Despesas do Mês"
-            value={`R$ ${(dashboardData?.monthly_expenses || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+            value={`R$ ${totalExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
             description="Total de saídas"
             icon={TrendingDown}
             variant="danger"
