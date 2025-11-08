@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@presentation/componen
 import { Switch } from '@presentation/components/ui/switch'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
 import { TransactionFormWizard } from '@presentation/components/transactions/TransactionFormWizard'
+import { DeleteTransactionDialog } from '@presentation/components/transactions/DeleteTransactionDialog'
+import { useDeleteTransactionDialogStore } from '@presentation/stores/use-delete-transaction-dialog'
 import { TransactionFilters, type TransactionFiltersState } from '@presentation/components/transactions/TransactionFilters'
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import { TransactionCategoryLabels } from '@core/enums/TransactionCategory'
@@ -25,6 +27,8 @@ import type { TransactionMode } from '@core/types/transaction-mode'
 export function TransactionsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [filters, setFilters] = useState<TransactionFiltersState>({})
+
+  const { openDialog: openDeleteDialog } = useDeleteTransactionDialogStore()
 
   // Convert local filters to API format
   const apiFilters: TransactionFiltersDto | undefined = Object.keys(filters).length > 0
@@ -43,10 +47,8 @@ export function TransactionsPage() {
     registerTransaction,
     registerInstallmentTransaction,
     registerRecurringTransaction,
-    deleteTransaction,
     updateFreeSpending,
     isRegistering,
-    isDeleting,
     isUpdatingFreeSpending,
   } = useTransactions(apiFilters)
 
@@ -72,16 +74,7 @@ export function TransactionsPage() {
   }
 
   const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta transação?')) {
-      deleteTransaction(id, {
-        onSuccess: () => {
-          toast.success('Transação excluída com sucesso!')
-        },
-        onError: () => {
-          toast.error('Erro ao excluir transação')
-        }
-      })
-    }
+    openDeleteDialog(id)
   }
 
   const handleToggleFreeSpending = (id: string, currentValue: boolean) => {
@@ -308,7 +301,6 @@ export function TransactionsPage() {
                             size="icon"
                             className="h-7 w-7 md:h-8 md:w-8"
                             onClick={() => handleDelete(transaction.id)}
-                            disabled={isDeleting}
                           >
                             <HiTrash className="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600" />
                           </Button>
@@ -329,6 +321,8 @@ export function TransactionsPage() {
           accounts={accounts}
           isLoading={isRegistering}
         />
+
+        <DeleteTransactionDialog />
       </div>
     </div>
   )
