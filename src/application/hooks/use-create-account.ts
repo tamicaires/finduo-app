@@ -10,7 +10,9 @@ import { AccountType } from '@core/enums/AccountType'
 import { toast } from 'sonner'
 
 const createAccountSchema = z.object({
-  name: z.string().min(1, 'Nome da conta é obrigatório'),
+  name: z.string({
+    error: 'Nome da conta é obrigatório',
+  }),
   type: z.nativeEnum(AccountType, {
     message: 'Tipo é obrigatório',
   }),

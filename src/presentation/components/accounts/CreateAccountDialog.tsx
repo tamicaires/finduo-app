@@ -111,7 +111,7 @@ export function CreateAccountDialog() {
                 Cancelar
               </Button>
               <Button type="submit" disabled={isPending || !canSubmit}>
-                {isPending ? <LoadingSpinner size="sm" /> : 'Criar'}
+                {isPending ? <><LoadingSpinner size="sm" /> Carregando ...</> : 'Criar'}
               </Button>
             </div>
           </form>
