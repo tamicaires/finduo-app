@@ -170,8 +170,7 @@ export function AccountFormDialog({
               <InputField
                 name="initial_balance"
                 label="Saldo Inicial"
-                type="number"
-                step="0.01"
+                type="money"
                 placeholder="0.00"
                 icon={MdAttachMoney}
                 required

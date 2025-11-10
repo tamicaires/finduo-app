@@ -95,9 +95,8 @@ export function CreateAccountDialog() {
             <InputField
               name="initial_balance"
               label="Saldo Inicial"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
+              type="money"
+              placeholder="R$ 0,00"
               icon={MdAttachMoney}
               required
             />

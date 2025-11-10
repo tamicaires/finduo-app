@@ -14,7 +14,7 @@ const createAccountSchema = z.object({
   type: z.nativeEnum(AccountType, {
     message: 'Tipo é obrigatório',
   }),
-  initial_balance: z.coerce.string().min(1, 'Saldo inicial é obrigatório'),
+  initial_balance: z.number().min(0, 'Saldo inicial deve ser maior ou igual a zero'),
   ownership: z.enum(['joint', 'personal']),
 })
 
@@ -23,7 +23,7 @@ export type CreateAccountFormData = z.infer<typeof createAccountSchema>
 const createAccountDefaultValues: CreateAccountFormData = {
   name: '',
   type: AccountType.CHECKING,
-  initial_balance: '0',
+  initial_balance: 0,
   ownership: 'joint',
 }
 
@@ -44,7 +44,7 @@ export function useCreateAccount() {
       return accountRepository.create({
         name: data.name,
         type: data.type,
-        initial_balance: parseFloat(data.initial_balance) || 0,
+        initial_balance: data.initial_balance,
         is_personal,
       })
     },
