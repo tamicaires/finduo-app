@@ -1,7 +1,3 @@
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { MdAccountBalanceWallet, MdCreditCard, MdAttachMoney, MdPeople, MdPerson, MdInfo } from 'react-icons/md'
 import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
 import { Button } from '@presentation/components/ui/button'
@@ -13,81 +9,15 @@ import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
 import { Alert, AlertDescription } from '@presentation/components/ui/alert'
 import { Label } from '@presentation/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@presentation/components/ui/radio-group'
-import { AccountType, AccountTypeLabels } from '@core/enums/AccountType'
+import { AccountTypeLabels } from '@core/enums/AccountType'
+import { useCreateAccount } from '@application/hooks/use-create-account'
+import { useCreateAccountDialogStore } from '@presentation/stores/use-create-account-dialog'
 import { useDashboard } from '@application/hooks/use-dashboard'
-import type { Account } from '@core/entities/Account'
 
-const accountSchema = z.object({
-  name: z.string({
-    error: "Nome da conta é obrigatório",
-  }),
-  type: z.nativeEnum(AccountType, {
-    message: "Tipo é obrigatório",
-  }),
-  initial_balance: z
-    .string({
-      error: "Saldo inicial é obrigatório",
-    }),
-  ownership: z.enum(["joint", "personal"]),
-});
-
-type AccountFormData = z.infer<typeof accountSchema>
-
-interface AccountFormDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSubmit: (data: { name: string; type: AccountType; initial_balance?: number; is_personal?: boolean }) => void
-  account?: Account
-  isLoading?: boolean
-}
-
-export function AccountFormDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  account,
-  isLoading,
-}: AccountFormDialogProps) {
+export function CreateAccountDialog() {
+  const { isOpen } = useCreateAccountDialogStore()
+  const { form, handleSubmit, handleClose, isPending, canSubmit } = useCreateAccount()
   const { dashboardData } = useDashboard()
-
-  const form = useForm<AccountFormData>({
-    resolver: zodResolver(accountSchema),
-    defaultValues: {
-      name: '',
-      type: AccountType.CHECKING,
-      initial_balance: '0',
-      ownership: 'joint',
-    },
-  })
-
-  useEffect(() => {
-    if (account) {
-      form.reset({
-        name: account.name,
-        type: account.type,
-        initial_balance: account.balance.toString(),
-        ownership: account.owner_id ? 'personal' : 'joint',
-      })
-    } else {
-      form.reset({
-        name: '',
-        type: AccountType.CHECKING,
-        initial_balance: '0',
-        ownership: 'joint',
-      })
-    }
-  }, [account, form])
-
-  const handleSubmit = (data: AccountFormData) => {
-    const is_personal = data.ownership === 'personal'
-
-    onSubmit({
-      name: data.name,
-      type: data.type,
-      initial_balance: parseFloat(data.initial_balance) || 0,
-      is_personal,
-    })
-  }
 
   const accountTypeOptions = Object.entries(AccountTypeLabels).map(([value, label]) => ({
     value,
@@ -97,21 +27,17 @@ export function AccountFormDialog({
   const allowPersonalAccounts = dashboardData?.couple?.allow_personal_accounts ?? false
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
         <DialogWrapper
           icon={MdAccountBalanceWallet}
-          description={
-            account
-              ? 'Atualize as informações da sua conta financeira'
-              : 'Crie uma nova conta para gerenciar suas finanças do casal'
-          }
+          description="Crie uma nova conta para gerenciar suas finanças do casal"
         >
-          <DialogTitle>{account ? 'Editar Conta' : 'Nova Conta'}</DialogTitle>
+          <DialogTitle>Nova Conta</DialogTitle>
         </DialogWrapper>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <InputField
               name="name"
               label="Nome da Conta"
@@ -166,29 +92,27 @@ export function AccountFormDialog({
               )}
             </div>
 
-            {!account && (
-              <InputField
-                name="initial_balance"
-                label="Saldo Inicial"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                icon={MdAttachMoney}
-                required
-              />
-            )}
+            <InputField
+              name="initial_balance"
+              label="Saldo Inicial"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              icon={MdAttachMoney}
+              required
+            />
 
             <div className="flex justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
+                onClick={handleClose}
+                disabled={isPending}
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? <LoadingSpinner size="sm" /> : account ? 'Salvar' : 'Criar'}
+              <Button type="submit" disabled={isPending || !canSubmit}>
+                {isPending ? <LoadingSpinner size="sm" /> : 'Criar'}
               </Button>
             </div>
           </form>

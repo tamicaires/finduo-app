@@ -14,27 +14,27 @@ import { AlertIcon } from '@presentation/components/icons/AlertIcon'
 import { Archive, CheckCircle2, History, EyeOff } from 'lucide-react'
 import { formatCurrency } from '@shared/utils/format-currency'
 import { AccountTypeLabels } from '@core/enums/AccountType'
+import { useArchiveAccount } from '@application/hooks/use-archive-account'
+import { useArchiveAccountDialogStore } from '@presentation/stores/use-archive-account-dialog'
 import type { Account } from '@core/entities/Account'
 
 interface ArchiveAccountModalProps {
   account: Account | null
-  open: boolean
-  onConfirm: () => void
-  onCancel: () => void
-  isPending?: boolean
 }
 
-export function ArchiveAccountModal({
-  account,
-  open,
-  onConfirm,
-  onCancel,
-  isPending = false,
-}: ArchiveAccountModalProps) {
+export function ArchiveAccountModal({ account }: ArchiveAccountModalProps) {
+  const { isOpen, closeDialog } = useArchiveAccountDialogStore()
+  const { handleArchiveAccount, isArchivingAccount } = useArchiveAccount()
+
+  const handleConfirm = () => {
+    if (!account) return
+    handleArchiveAccount(account.id)
+  }
+
   if (!account) return null
 
   return (
-    <AlertDialog open={open} onOpenChange={onCancel}>
+    <AlertDialog open={isOpen} onOpenChange={closeDialog}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertIcon variant="info" />
@@ -102,19 +102,19 @@ export function ArchiveAccountModal({
 
         <AlertDialogFooter className="gap-2 sm:gap-2">
           <AlertDialogCancel
-            onClick={onCancel}
-            disabled={isPending}
+            onClick={closeDialog}
+            disabled={isArchivingAccount}
             className="w-full sm:w-full"
           >
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
-            disabled={isPending}
+            onClick={handleConfirm}
+            disabled={isArchivingAccount}
             className="w-full sm:w-full bg-orange-600 hover:bg-orange-700"
           >
             <Archive className="mr-2 h-4 w-4" />
-            {isPending ? 'Arquivando...' : 'Arquivar Conta'}
+            {isArchivingAccount ? 'Arquivando...' : 'Arquivar Conta'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -17,34 +17,31 @@ import { Trash2, Zap, Shield } from "lucide-react";
 import type { Account } from "@core/entities/Account";
 import { formatCurrency } from "@shared/utils/format-currency";
 import { AccountTypeLabels } from "@core/enums/AccountType";
+import { useDeleteAccount } from "@application/hooks/use-delete-account";
+import { usePermanentDeleteAccountDialogStore } from "@presentation/stores/use-permanent-delete-account-dialog";
 
 interface PermanentDeleteAccountModalProps {
   account: Account | null;
-  open: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-  isPending?: boolean;
 }
 
 export function PermanentDeleteAccountModal({
   account,
-  open,
-  onConfirm,
-  onCancel,
-  isPending = false,
 }: PermanentDeleteAccountModalProps) {
   const [confirmText, setConfirmText] = useState("");
+  const { isOpen, closeDialog } = usePermanentDeleteAccountDialogStore();
+  const { handleDeleteAccount, isDeletingAccount } = useDeleteAccount();
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setConfirmText("");
-      onCancel();
+      closeDialog();
     }
   };
 
   const handleConfirm = () => {
+    if (!account) return;
+    handleDeleteAccount(account.id);
     setConfirmText("");
-    onConfirm();
   };
 
   if (!account) return null;
@@ -52,7 +49,7 @@ export function PermanentDeleteAccountModal({
   const isConfirmed = confirmText === "EXCLUIR";
 
   return (
-    <AlertDialog open={open} onOpenChange={handleOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogContent className="max-w-lg border-2 border-red-200 dark:border-red-900">
         <AlertDialogHeader>
           <AlertIcon variant="destructive" />
@@ -151,7 +148,7 @@ export function PermanentDeleteAccountModal({
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
                 placeholder="Digite EXCLUIR"
-                disabled={isPending}
+                disabled={isDeletingAccount}
                 className={`font-bold text-center text-lg ${
                   isConfirmed
                     ? "border-red-500 bg-red-50 dark:bg-red-950/50"
@@ -166,19 +163,19 @@ export function PermanentDeleteAccountModal({
 
         <AlertDialogFooter className="gap-2 sm:gap-2">
           <AlertDialogCancel
-            onClick={onCancel}
-            disabled={isPending}
+            onClick={closeDialog}
+            disabled={isDeletingAccount}
             className="w-full sm:w-full"
           >
             Cancelar e Manter Seguro
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            disabled={!isConfirmed || isPending}
+            disabled={!isConfirmed || isDeletingAccount}
             className="w-full sm:w-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            {isPending ? "Deletando..." : "Sim, Deletar Permanentemente"}
+            {isDeletingAccount ? "Deletando..." : "Sim, Deletar Permanentemente"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
