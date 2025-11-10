@@ -270,7 +270,7 @@ function SelectComponent({
       {/* Icon */}
       {Icon && (
         <Icon
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 cursor-pointer z-10"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4 cursor-pointer z-10"
           onClick={() => !disabled && setIsOpen((prev) => !prev)}
         />
       )}
@@ -301,14 +301,14 @@ function SelectComponent({
         <div className="flex items-center gap-1 ml-1 flex-shrink-0">
           {clearable && selectedOptions.length > 0 && (
             <X
-              className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              className="h-4 w-4 text-gray-500 dark:text-gray-400 hover:text-foreground cursor-pointer transition-colors"
               onClick={handleClear}
               aria-label="Limpar seleção"
             />
           )}
           <ChevronDown
             className={cn(
-              'w-4 h-4 text-muted-foreground transition-transform',
+              'w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform',
               isOpen && 'transform rotate-180'
             )}
           />

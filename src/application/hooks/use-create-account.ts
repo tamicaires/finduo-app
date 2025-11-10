@@ -14,7 +14,7 @@ const createAccountSchema = z.object({
   type: z.nativeEnum(AccountType, {
     message: 'Tipo é obrigatório',
   }),
-  initial_balance: z.string().min(1, 'Saldo inicial é obrigatório'),
+  initial_balance: z.coerce.string().min(1, 'Saldo inicial é obrigatório'),
   ownership: z.enum(['joint', 'personal']),
 })
 
