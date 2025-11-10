@@ -18,6 +18,7 @@ export const API_ROUTES = {
   LIST_ACCOUNTS: '/accounts',
   UPDATE_ACCOUNT: (id: string) => `/accounts/${id}`,
   DELETE_ACCOUNT: (id: string) => `/accounts/${id}`,
+  ARCHIVE_ACCOUNT: (id: string) => `/accounts/${id}/archive`,
 
   // Transactions
   REGISTER_TRANSACTION: '/transactions',

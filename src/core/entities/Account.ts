@@ -9,4 +9,5 @@ export interface Account {
   balance: number
   is_joint: boolean
   created_at: Date
+  archived_at: string | null
 }

@@ -9,8 +9,11 @@ import {
   MdPerson,
   MdSwapHoriz,
 } from "react-icons/md";
+import { Archive } from "lucide-react";
 import { toast } from "sonner";
 import { useAccounts } from "@application/hooks/use-accounts";
+import { useArchiveAccount } from "@application/hooks/use-archive-account";
+import { useDeleteAccount } from "@application/hooks/use-delete-account";
 import { Button } from "@presentation/components/ui/button";
 import {
   Card,
@@ -29,8 +32,8 @@ import {
 import { LoadingSpinner } from "@presentation/components/shared/LoadingSpinner";
 import { AccountFormDialog } from "@presentation/components/accounts/AccountFormDialog";
 import { AccountVisibilityDialog } from "@presentation/components/accounts/AccountVisibilityDialog";
-import { DeleteAccountDialog } from "@presentation/components/accounts/DeleteAccountDialog";
-import { useDeleteAccountDialogStore } from "@presentation/stores/use-delete-account-dialog";
+import { ArchiveAccountModal } from "@presentation/components/accounts/ArchiveAccountModal";
+import { PermanentDeleteAccountModal } from "@presentation/components/accounts/PermanentDeleteAccountModal";
 import { AccountType, AccountTypeLabels } from "@core/enums/AccountType";
 import { formatCurrency } from "@shared/utils/format-currency";
 import type { Account } from "@core/entities/Account";
@@ -39,9 +42,9 @@ import type { CreateAccountDto } from "@infrastructure/repositories/account.repo
 export function AccountsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isVisibilityDialogOpen, setIsVisibilityDialogOpen] = useState(false);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | undefined>();
-
-  const { openDialog: openDeleteDialog } = useDeleteAccountDialogStore();
 
   const {
     accounts,
@@ -53,6 +56,9 @@ export function AccountsPage() {
     isUpdating,
     isTogglingVisibility,
   } = useAccounts();
+
+  const { handleArchiveAccount, isArchivingAccount } = useArchiveAccount();
+  const { handleDeleteAccount, isDeletingAccount } = useDeleteAccount();
 
   const handleCreate = (data: CreateAccountDto) => {
     createAccount(data, {
@@ -86,8 +92,36 @@ export function AccountsPage() {
     );
   };
 
-  const handleDelete = (account: Account) => {
-    openDeleteDialog(account.id, account.name);
+  const handleOpenArchiveModal = (account: Account) => {
+    setSelectedAccount(account);
+    setIsArchiveModalOpen(true);
+  };
+
+  const handleCloseArchiveModal = () => {
+    setIsArchiveModalOpen(false);
+    setSelectedAccount(undefined);
+  };
+
+  const handleConfirmArchive = () => {
+    if (!selectedAccount) return;
+    handleArchiveAccount(selectedAccount.id);
+    handleCloseArchiveModal();
+  };
+
+  const handleOpenDeleteModal = (account: Account) => {
+    setSelectedAccount(account);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedAccount(undefined);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedAccount) return;
+    handleDeleteAccount(selectedAccount.id);
+    handleCloseDeleteModal();
   };
 
   const handleOpenDialog = (account?: Account) => {
@@ -271,7 +305,7 @@ export function AccountsPage() {
                             onClick={() => handleOpenDialog(account)}
                           >
                             <HiPencil className="mr-2 h-4 w-4" />
-                            Editar
+                            Editar conta
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleOpenVisibilityDialog(account)}
@@ -281,11 +315,17 @@ export function AccountsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            onClick={() => handleDelete(account)}
+                            onClick={() => handleOpenArchiveModal(account)}
+                          >
+                            <Archive className="mr-2 h-4 w-4" />
+                            Arquivar conta
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleOpenDeleteModal(account)}
                             className="text-red-600 focus:text-red-600"
                           >
                             <HiTrash className="mr-2 h-4 w-4" />
-                            Excluir
+                            Excluir permanentemente
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -323,7 +363,21 @@ export function AccountsPage() {
           isPending={isTogglingVisibility}
         />
 
-        <DeleteAccountDialog />
+        <ArchiveAccountModal
+          account={selectedAccount || null}
+          open={isArchiveModalOpen}
+          onConfirm={handleConfirmArchive}
+          onCancel={handleCloseArchiveModal}
+          isPending={isArchivingAccount}
+        />
+
+        <PermanentDeleteAccountModal
+          account={selectedAccount || null}
+          open={isDeleteModalOpen}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCloseDeleteModal}
+          isPending={isDeletingAccount}
+        />
       </div>
     </div>
   );

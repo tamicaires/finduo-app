@@ -1,29 +1,34 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { MdClose, MdPayment, MdCalendarToday, MdAttachMoney } from 'react-icons/md'
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MdClose,
+  MdPayment,
+  MdCalendarToday,
+  MdAttachMoney,
+} from "react-icons/md";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@presentation/components/ui/dialog'
-import { Button } from '@presentation/components/ui/button'
-import { Input } from '@presentation/components/ui/input'
-import { Label } from '@presentation/components/ui/label'
-import { formatCurrency } from '@shared/utils/format-currency'
-import { cn } from '@shared/utils'
+} from "@presentation/components/ui/dialog";
+import { Button } from "@presentation/components/ui/button";
+import { Input } from "@presentation/components/ui/input";
+import { Label } from "@presentation/components/ui/label";
+import { formatCurrency } from "@shared/utils/format-currency";
+import { cn } from "@shared/utils";
+import { DialogWrapper } from "./DialogWrapper";
 
 interface PaymentModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: (transactionDate?: string) => void
-  title: string
-  description: string
-  amount: number
-  dueDate: string
-  isPaying?: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (transactionDate?: string) => void;
+  title: string;
+  description: string;
+  amount: number;
+  dueDate: string;
+  isPaying?: boolean;
 }
 
 export function PaymentModal({
@@ -31,47 +36,43 @@ export function PaymentModal({
   onClose,
   onConfirm,
   title,
-  description,
   amount,
   dueDate,
   isPaying = false,
 }: PaymentModalProps) {
-  const [useCustomDate, setUseCustomDate] = useState(false)
-  const [transactionDate, setTransactionDate] = useState('')
+  const [useCustomDate, setUseCustomDate] = useState(false);
+  const [transactionDate, setTransactionDate] = useState("");
 
   const handleConfirm = () => {
     if (useCustomDate && transactionDate) {
-      onConfirm(transactionDate)
+      onConfirm(transactionDate);
     } else {
-      onConfirm()
+      onConfirm();
     }
-  }
+  };
 
   const handleClose = () => {
     if (!isPaying) {
-      setUseCustomDate(false)
-      setTransactionDate('')
-      onClose()
+      setUseCustomDate(false);
+      setTransactionDate("");
+      onClose();
     }
-  }
+  };
 
-  const today = new Date().toISOString().split('T')[0]
-  const formattedDueDate = new Date(dueDate).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
+  const today = new Date().toISOString().split("T")[0];
+  const formattedDueDate = new Date(dueDate).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MdPayment className="h-5 w-5 text-primary" />
-            {title}
-          </DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
+        <DialogWrapper icon={MdPayment}>
+          <DialogTitle className="flex items-center gap-2">{title}</DialogTitle>
+          <DialogDescription>Confirme os dados e prossiga com o pagamento</DialogDescription>
+        </DialogWrapper>
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -96,7 +97,9 @@ export function PaymentModal({
           <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
             <MdCalendarToday className="h-4 w-4 text-muted-foreground" />
             <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Data de vencimento</p>
+              <p className="text-xs text-muted-foreground">
+                Data de vencimento
+              </p>
               <p className="text-sm font-medium">{formattedDueDate}</p>
             </div>
           </div>
@@ -115,8 +118,8 @@ export function PaymentModal({
               <Label
                 htmlFor="custom-date"
                 className={cn(
-                  'text-sm font-medium cursor-pointer',
-                  isPaying && 'opacity-50 cursor-not-allowed'
+                  "text-sm font-medium cursor-pointer",
+                  isPaying && "opacity-50 cursor-not-allowed"
                 )}
               >
                 Usar data personalizada
@@ -127,12 +130,15 @@ export function PaymentModal({
               {useCustomDate && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
+                  animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className="space-y-2">
-                    <Label htmlFor="transaction-date" className="text-xs text-muted-foreground">
+                    <Label
+                      htmlFor="transaction-date"
+                      className="text-xs text-muted-foreground"
+                    >
                       Data da transação
                     </Label>
                     <Input
@@ -154,11 +160,11 @@ export function PaymentModal({
           </div>
 
           {/* Info Box */}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-800">
+          <div className="p-3 bg-blue-500/10 border border-blue-500/25 rounded-lg">
+            <p className="text-xs text-blue-500">
               {useCustomDate
-                ? 'A transação será registrada com a data que você escolher.'
-                : 'A transação será registrada com a data de hoje.'}
+                ? "A transação será registrada com a data que você escolher."
+                : "A transação será registrada com a data de hoje."}
             </p>
           </div>
         </motion.div>
@@ -179,10 +185,10 @@ export function PaymentModal({
             className="w-full sm:w-auto"
           >
             <MdPayment className="h-4 w-4 mr-2" />
-            {isPaying ? 'Processando...' : 'Confirmar Pagamento'}
+            {isPaying ? "Processando..." : "Confirmar Pagamento"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
