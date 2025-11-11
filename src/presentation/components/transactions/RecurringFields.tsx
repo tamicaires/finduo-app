@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { MdRepeat, MdCalendarToday, MdEventRepeat, MdInfo, MdCheckCircle } from 'react-icons/md'
 import { InputField } from '@presentation/components/form/InputField'
+import { DateField } from '@presentation/components/form/DateField'
 import { SelectField } from '@presentation/components/form/SelectField'
 import { SwitchField } from '@presentation/components/form/SwitchField'
 import { Alert, AlertDescription } from '@presentation/components/ui/alert'
@@ -80,22 +81,22 @@ export function RecurringFields() {
           description="Repetir a cada quantos períodos"
         />
 
-        <InputField
+        <DateField
           name="start_date"
           label="Data de Início"
-          type="date"
           icon={MdCalendarToday}
           required
           description="Quando a recorrência começará"
+          align="end"
         />
 
         {hasEndDate && (
-          <InputField
+          <DateField
             name="end_date"
             label="Data de Término"
-            type="date"
             icon={MdCalendarToday}
             description="Quando a recorrência terminará"
+            align="end"
           />
         )}
       </div>
