@@ -284,15 +284,15 @@ export function TransactionFormWizard({
         <DialogWrapper
           icon={MdSwapHoriz}
           description={
-            step === 'type'
-              ? 'Registre uma entrada ou saída de dinheiro'
-              : step === 'mode'
-              ? 'Escolha como deseja organizar esta transação'
-              : 'Preencha os detalhes da transação'
+            step === "type"
+              ? "Registre uma entrada ou saída de dinheiro"
+              : step === "mode"
+              ? "Escolha como deseja organizar esta transação"
+              : "Preencha os detalhes da transação"
           }
         >
           <div className="flex items-center gap-3">
-            {step !== 'type' && (
+            {step !== "type" && (
               <Button
                 type="button"
                 variant="ghost"
@@ -308,7 +308,7 @@ export function TransactionFormWizard({
         </DialogWrapper>
 
         {/* Step 1: Tipo */}
-        {step === 'type' && (
+        {step === "type" && (
           <div className="py-4">
             <TransactionTypeSelector
               value={selectedType}
@@ -318,7 +318,7 @@ export function TransactionFormWizard({
         )}
 
         {/* Step 2: Modo */}
-        {step === 'mode' && (
+        {step === "mode" && (
           <div className="py-4">
             <TransactionModeSelector
               value={selectedMode}
@@ -328,9 +328,12 @@ export function TransactionFormWizard({
         )}
 
         {/* Step 3: Formulário */}
-        {step === 'form' && (
+        {step === "form" && (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5 py-2">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-5 py-2"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SelectField
                   name="account_id"
@@ -342,7 +345,7 @@ export function TransactionFormWizard({
                   required
                 />
 
-                {selectedMode === 'simple' && (
+                {selectedMode === "simple" && (
                   <>
                     <InputField
                       name="amount"
@@ -361,7 +364,7 @@ export function TransactionFormWizard({
                   </>
                 )}
 
-                {selectedMode === 'recurring' && (
+                {selectedMode === "recurring" && (
                   <InputField
                     name="amount"
                     label="Valor"
@@ -375,7 +378,11 @@ export function TransactionFormWizard({
                 <CategorySelect
                   name="category_id"
                   label="Categoria"
-                  placeholder={loadingCategories ? "Carregando..." : "Selecione uma categoria"}
+                  placeholder={
+                    loadingCategories
+                      ? "Carregando..."
+                      : "Selecione uma categoria"
+                  }
                   categories={categories || []}
                   disabled={loadingCategories}
                   transactionType={selectedType!}
@@ -391,21 +398,22 @@ export function TransactionFormWizard({
                 />
               </div>
 
-              {selectedMode === 'installment' && (
+              {selectedMode === "installment" && (
                 <InstallmentFields totalAmount={totalAmount} />
               )}
 
-              {selectedMode === 'recurring' && (
-                <RecurringFields />
-              )}
+              {selectedMode === "recurring" && <RecurringFields />}
 
-              <SwitchField
-                name="is_free_spending"
-                label="Gasto Livre"
-                variant="secondary"
-                description="Contabilizado como gasto livre pessoal"
-                tooltipMessage="Gastos livres são despesas pessoais que não afetam o orçamento compartilhado"
-              />
+              {selectedType === TransactionType.EXPENSE && (
+                <SwitchField
+                  name="is_free_spending"
+                  label="Gasto Livre"
+                  variant="secondary"
+                  description="Contabilizado como gasto livre pessoal"
+                  tooltipMessage="Gastos livres são despesas pessoais que não afetam o orçamento compartilhado"
+                />
+
+              )}
 
               {!isFreeSpending && (
                 <div className="space-y-3">
@@ -420,7 +428,8 @@ export function TransactionFormWizard({
                     <Alert>
                       <MdInfo className="h-4 w-4" />
                       <AlertDescription className="text-sm">
-                        Transações privadas não estão disponíveis no seu plano atual
+                        Transações privadas não estão disponíveis no seu plano
+                        atual
                       </AlertDescription>
                     </Alert>
                   )}
@@ -438,7 +447,11 @@ export function TransactionFormWizard({
                   Voltar
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? <LoadingSpinner size="sm" /> : 'Registrar Transação'}
+                  {isLoading ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    "Registrar Transação"
+                  )}
                 </Button>
               </div>
             </form>
@@ -446,5 +459,5 @@ export function TransactionFormWizard({
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }
