@@ -8,7 +8,7 @@ import { Button } from '@presentation/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
 import { Switch } from '@presentation/components/ui/switch'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
-import { TransactionFormWizard } from '@presentation/components/transactions/TransactionFormWizard'
+import { TransactionWizard } from '@presentation/components/transactions/wizard'
 import { DeleteTransactionDialog } from '@presentation/components/transactions/DeleteTransactionDialog'
 import { useDeleteTransactionDialogStore } from '@presentation/stores/use-delete-transaction-dialog'
 import { TransactionFilters, type TransactionFiltersState } from '@presentation/components/transactions/TransactionFilters'
@@ -314,7 +314,7 @@ export function TransactionsPage() {
           </CardContent>
         </Card>
 
-        <TransactionFormWizard
+        <TransactionWizard
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           onSubmit={handleRegister}

@@ -1,16 +1,21 @@
 import { MdReceipt, MdRepeat, MdViewWeek } from 'react-icons/md'
 import { Label } from '@presentation/components/ui/label'
 import type { TransactionMode } from '@core/types/transaction-mode'
+import { TransactionType } from '@core/enums/TransactionType'
+import { useTransactionModeFilter } from './wizard/hooks/use-transaction-mode-filter'
 
 export type { TransactionMode }
 
 interface TransactionModeSelectorProps {
   value: TransactionMode
   onChange: (mode: TransactionMode) => void
+  transactionType?: TransactionType
 }
 
-export function TransactionModeSelector({ value, onChange }: TransactionModeSelectorProps) {
-  const modes = [
+export function TransactionModeSelector({ value, onChange, transactionType }: TransactionModeSelectorProps) {
+  const { availableModes } = useTransactionModeFilter(transactionType || null)
+
+  const allModes = [
     {
       value: 'simple' as const,
       label: 'Simples',
@@ -31,10 +36,13 @@ export function TransactionModeSelector({ value, onChange }: TransactionModeSele
     },
   ]
 
+  // Filtrar modos baseado no tipo de transação
+  const modes = allModes.filter(mode => availableModes.includes(mode.value))
+
   return (
     <div className="space-y-3">
       <Label className="text-base font-semibold">Tipo de Transação</Label>
-      <div className="grid grid-cols-3 gap-3">
+      <div className={`grid gap-3 ${modes.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
         {modes.map((mode) => {
           const Icon = mode.icon
           const isSelected = value === mode.value
