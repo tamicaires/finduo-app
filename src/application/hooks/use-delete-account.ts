@@ -13,10 +13,12 @@ export function useDeleteAccount() {
     mutationFn: (accountId: string) => accountRepository.delete(accountId),
     onSuccess: () => {
       toast.success('Conta excluída permanentemente')
-      // Permanent delete requires invalidating transactions too
+      // ⚠️ CRITICAL: Permanent delete requires invalidating all related queries
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] })
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DASHBOARD] })
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECURRING_TEMPLATES] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES] })
       closeDialog()
     },
     onError: () => {

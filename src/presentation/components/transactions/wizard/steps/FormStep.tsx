@@ -52,7 +52,7 @@ export function FormStep({
   // Strategy Pattern: obter schema e defaults baseado no modo
   const strategy = useFormStrategy(transactionMode)
 
-  const form = useForm<TransactionFormData>({
+  const form = useForm({
     resolver: zodResolver(strategy.schema),
     defaultValues: strategy.getDefaultValues(transactionType),
   })

@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import type { TransactionMode } from '@core/types/transaction-mode'
-import type { TransactionFormStrategy } from '../strategies/TransactionFormStrategy.interface'
 import { SimpleTransactionStrategy } from '../strategies/SimpleTransactionStrategy'
 import { InstallmentTransactionStrategy } from '../strategies/InstallmentTransactionStrategy'
 import { RecurringTransactionStrategy } from '../strategies/RecurringTransactionStrategy'
@@ -9,7 +8,9 @@ import { RecurringTransactionStrategy } from '../strategies/RecurringTransaction
  * Hook para selecionar a strategy correta baseado no modo de transação
  * Implementa o Strategy Pattern para formulários
  */
-export function useFormStrategy(mode: TransactionMode): TransactionFormStrategy {
+export function useFormStrategy(
+  mode: TransactionMode
+): SimpleTransactionStrategy | InstallmentTransactionStrategy | RecurringTransactionStrategy {
   const strategy = useMemo(() => {
     switch (mode) {
       case 'simple':
