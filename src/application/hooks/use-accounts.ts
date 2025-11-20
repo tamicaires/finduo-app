@@ -37,11 +37,23 @@ export function useAccounts() {
     },
   })
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => accountRepository.delete(id),
+  const archiveMutation = useMutation({
+    mutationFn: (id: string) => accountRepository.archive(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] })
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DASHBOARD] })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => accountRepository.delete(id),
+    onSuccess: () => {
+      // ⚠️ CRITICAL: When permanently deleting, invalidate transactions too
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.ACCOUNTS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DASHBOARD] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.TRANSACTIONS] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECURRING_TEMPLATES] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INSTALLMENT_TEMPLATES] })
     },
   })
 
@@ -61,14 +73,17 @@ export function useAccounts() {
     refetch,
     createAccount: createMutation.mutate,
     updateAccount: updateMutation.mutate,
+    archiveAccount: archiveMutation.mutate,
     deleteAccount: deleteMutation.mutate,
     toggleVisibility: toggleVisibilityMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
+    isArchiving: archiveMutation.isPending,
     isDeleting: deleteMutation.isPending,
     isTogglingVisibility: toggleVisibilityMutation.isPending,
     createError: createMutation.error,
     updateError: updateMutation.error,
+    archiveError: archiveMutation.error,
     deleteError: deleteMutation.error,
     toggleVisibilityError: toggleVisibilityMutation.error,
   }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { MdAttachMoney, MdCalendarToday, MdViewWeek } from 'react-icons/md'
 import { InputField } from '@presentation/components/form/InputField'
+import { DateField } from '@presentation/components/form/DateField'
 import { formatCurrency } from '@shared/utils/format-currency'
 
 interface InstallmentFieldsProps {
@@ -70,12 +71,12 @@ export function InstallmentFields({ totalAmount }: InstallmentFieldsProps) {
           }}
         />
 
-        <InputField
+        <DateField
           name="first_installment_date"
           label="Data da Primeira Parcela"
-          type="date"
           icon={MdCalendarToday}
           description="As demais parcelas serão criadas mensalmente"
+          align="end"
         />
       </div>
 

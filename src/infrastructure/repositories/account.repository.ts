@@ -16,6 +16,16 @@ export interface UpdateAccountDto {
   is_personal?: boolean
 }
 
+export interface ArchiveAccountResponse {
+  success: boolean
+  archived_account_id: string
+}
+
+export interface DeleteAccountResponse {
+  success: boolean
+  deleted_account_id: string
+}
+
 export const accountRepository = {
   async list(): Promise<Account[]> {
     const response = await apiClient.get<{ accounts: Account[]; total_balance: number }>(
@@ -34,8 +44,20 @@ export const accountRepository = {
     return response.data
   },
 
-  async delete(id: string): Promise<void> {
-    await apiClient.delete(API_ROUTES.DELETE_ACCOUNT(id))
+  async archive(id: string): Promise<ArchiveAccountResponse> {
+    const response = await apiClient.patch<ArchiveAccountResponse>(
+      API_ROUTES.ARCHIVE_ACCOUNT(id)
+    )
+    return response.data
+  },
+
+  async delete(id: string): Promise<DeleteAccountResponse> {
+    // ⚠️ IMPORTANT: This permanently deletes the account AND all its transactions
+    // Use archive() instead for soft delete
+    const response = await apiClient.delete<DeleteAccountResponse>(
+      API_ROUTES.DELETE_ACCOUNT(id)
+    )
+    return response.data
   },
 
   async toggleVisibility(id: string, isPersonal: boolean): Promise<Account> {

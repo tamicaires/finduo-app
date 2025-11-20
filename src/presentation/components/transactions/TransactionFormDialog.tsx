@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
 import { InputField } from '@presentation/components/form/InputField'
+import { DateField } from '@presentation/components/form/DateField'
 import { SelectField } from '@presentation/components/form/SelectField'
 import { SwitchField } from '@presentation/components/form/SwitchField'
 import { RadioGroupField } from '@presentation/components/form/RadioGroupField'
@@ -39,14 +40,14 @@ const baseTransactionFields = {
 const simpleTransactionSchema = z.object({
   ...baseTransactionFields,
   amount: z.number().positive('Valor deve ser maior que zero'),
-  transaction_date: z.string().optional(),
+  transaction_date: z.date().nullable().optional(),
 })
 
 const installmentTransactionSchema = z.object({
   ...baseTransactionFields,
   total_amount: z.number().positive('Valor total deve ser maior que zero'),
   total_installments: z.number().min(2, 'Mínimo 2 parcelas').max(99, 'Máximo 99 parcelas'),
-  first_installment_date: z.string().optional(),
+  first_installment_date: z.date().nullable().optional(),
 })
 
 const recurringTransactionSchema = z.object({
@@ -56,8 +57,10 @@ const recurringTransactionSchema = z.object({
     message: 'Frequência é obrigatória'
   }),
   interval: z.number().min(1, 'Mínimo 1').max(99, 'Máximo 99').default(1),
-  start_date: z.string().min(1, 'Data de início é obrigatória'),
-  end_date: z.string().optional(),
+  start_date: z.date({
+    error: 'Data de início é obrigatória',
+  }),
+  end_date: z.date().nullable().optional(),
   has_end_date: z.boolean().default(false),
   create_first_transaction: z.boolean().default(true),
 })
@@ -105,13 +108,16 @@ export function TransactionFormDialog({
       visibility: 'SHARED' as const,
     }
 
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
     switch (transactionMode) {
       case 'installment':
         return {
           ...base,
           total_amount: 0,
           total_installments: 12,
-          first_installment_date: new Date().toISOString().split('T')[0],
+          first_installment_date: today,
         }
       case 'recurring':
         return {
@@ -119,8 +125,8 @@ export function TransactionFormDialog({
           amount: 0,
           frequency: RecurrenceFrequency.MONTHLY,
           interval: 1,
-          start_date: new Date().toISOString().split('T')[0],
-          end_date: '',
+          start_date: today,
+          end_date: undefined,
           has_end_date: false,
           create_first_transaction: true,
         }
@@ -128,7 +134,7 @@ export function TransactionFormDialog({
         return {
           ...base,
           amount: 0,
-          transaction_date: new Date().toISOString().split('T')[0],
+          transaction_date: today,
         }
     }
   }
@@ -254,10 +260,9 @@ export function TransactionFormDialog({
                     required
                   />
 
-                  <InputField
+                  <DateField
                     name="transaction_date"
                     label="Data"
-                    type="date"
                     icon={MdCalendarToday}
                   />
                 </>
