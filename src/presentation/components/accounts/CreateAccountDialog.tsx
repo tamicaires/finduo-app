@@ -1,5 +1,11 @@
 import { MdAccountBalanceWallet, MdCreditCard, MdAttachMoney, MdPeople, MdPerson, MdInfo } from 'react-icons/md'
-import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  DrawerHandle,
+} from '@presentation/components/ui/responsive-dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
 import { InputField } from '@presentation/components/form/InputField'
@@ -13,11 +19,15 @@ import { AccountTypeLabels } from '@core/enums/AccountType'
 import { useCreateAccount } from '@application/hooks/use-create-account'
 import { useCreateAccountDialogStore } from '@presentation/stores/use-create-account-dialog'
 import { useDashboard } from '@application/hooks/use-dashboard'
+import { useIsMobile } from '@presentation/hooks/use-is-mobile'
+import { useHaptics } from '@presentation/hooks/use-haptics'
 
 export function CreateAccountDialog() {
   const { isOpen } = useCreateAccountDialogStore()
   const { form, handleSubmit, handleClose, isPending, canSubmit } = useCreateAccount()
   const { dashboardData } = useDashboard()
+  const isMobile = useIsMobile()
+  const haptics = useHaptics()
 
   const accountTypeOptions = Object.entries(AccountTypeLabels).map(([value, label]) => ({
     value,
@@ -26,18 +36,27 @@ export function CreateAccountDialog() {
 
   const allowPersonalAccounts = dashboardData?.couple?.allow_personal_accounts ?? false
 
+  const onSubmit = (e: React.FormEvent) => {
+    haptics.medium()
+    handleSubmit(e)
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
-        <DialogWrapper
-          icon={MdAccountBalanceWallet}
-          description="Crie uma nova conta para gerenciar suas finanças do casal"
-        >
-          <DialogTitle>Nova Conta</DialogTitle>
-        </DialogWrapper>
+    <ResponsiveDialog open={isOpen} onOpenChange={handleClose}>
+      <ResponsiveDialogContent className={isMobile ? 'px-4' : ''}>
+        {isMobile && <DrawerHandle />}
+
+        <ResponsiveDialogHeader>
+          <DialogWrapper
+            icon={MdAccountBalanceWallet}
+            description="Crie uma nova conta para gerenciar suas finanças do casal"
+          >
+            <ResponsiveDialogTitle>Nova Conta</ResponsiveDialogTitle>
+          </DialogWrapper>
+        </ResponsiveDialogHeader>
 
         <Form {...form}>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4">
             <InputField
               name="name"
               label="Nome da Conta"
@@ -116,7 +135,7 @@ export function CreateAccountDialog() {
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }
