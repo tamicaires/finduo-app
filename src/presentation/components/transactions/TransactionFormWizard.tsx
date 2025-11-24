@@ -4,7 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
 import { MdSwapHoriz, MdAccountBalanceWallet, MdAttachMoney, MdCalendarToday, MdDescription, MdInfo, MdArrowBack } from 'react-icons/md'
-import { Dialog, DialogContent, DialogTitle } from '@presentation/components/ui/dialog'
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogTitle,
+} from '@presentation/components/ui/responsive-dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
 import { InputField } from '@presentation/components/form/InputField'
@@ -25,6 +29,8 @@ import type { TransactionMode } from '@core/types/transaction-mode'
 import type { Account } from '@core/entities/Account'
 import { categoryService } from '@/application/services/category.service'
 import { useDashboard } from '@application/hooks/use-dashboard'
+import { useIsMobile } from '@presentation/hooks/use-is-mobile'
+import { useHaptics } from '@presentation/hooks/use-haptics'
 
 const baseTransactionFields = {
   account_id: z.string().min(1, 'Conta é obrigatória'),
@@ -81,6 +87,8 @@ export function TransactionFormWizard({
   isLoading,
 }: TransactionFormWizardProps) {
   const { dashboardData } = useDashboard()
+  const isMobile = useIsMobile()
+  const haptics = useHaptics()
   const [step, setStep] = useState<'type' | 'mode' | 'form'>('type')
   const [selectedType, setSelectedType] = useState<TransactionType>()
   const [selectedMode, setSelectedMode] = useState<TransactionMode>('simple')
@@ -189,16 +197,19 @@ export function TransactionFormWizard({
   })
 
   const handleTypeSelect = (type: TransactionType) => {
+    haptics.light()
     setSelectedType(type)
     setStep('mode')
   }
 
   const handleModeSelect = (mode: TransactionMode) => {
+    haptics.light()
     setSelectedMode(mode)
     setStep('form')
   }
 
   const handleBack = () => {
+    haptics.light()
     if (step === 'form') {
       setStep('mode')
     } else if (step === 'mode') {
@@ -207,6 +218,7 @@ export function TransactionFormWizard({
   }
 
   const handleSubmit = (data: SimpleTransactionFormData | InstallmentTransactionFormData | RecurringTransactionFormData) => {
+    haptics.medium()
     const visibility = data.is_free_spending ? 'FREE_SPENDING' : data.visibility
 
     // Remove campos de controle que não devem ir para o backend (apenas para RecurringTransactionFormData)
@@ -279,61 +291,64 @@ export function TransactionFormWizard({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogWrapper
-          icon={MdSwapHoriz}
-          description={
-            step === "type"
-              ? "Registre uma entrada ou saída de dinheiro"
-              : step === "mode"
-              ? "Escolha como deseja organizar esta transação"
-              : "Preencha os detalhes da transação"
-          }
-        >
-          <div className="flex items-center gap-3">
-            {step !== "type" && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleBack}
-                className="h-8 w-8 p-0"
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className={isMobile ? 'p-0 h-[95vh]' : 'max-w-3xl max-h-[90vh] overflow-y-auto'}>
+        <div className={isMobile ? 'sticky top-0 z-10 bg-background border-b px-4 py-3' : ''}>
+          <DialogWrapper
+            icon={MdSwapHoriz}
+            description={
+              step === "type"
+                ? "Registre uma entrada ou saída de dinheiro"
+                : step === "mode"
+                ? "Escolha como deseja organizar esta transação"
+                : "Preencha os detalhes da transação"
+            }
+          >
+            <div className="flex items-center gap-3">
+              {step !== "type" && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBack}
+                  className="h-8 w-8 p-0"
+                >
+                  <MdArrowBack className="h-5 w-5" />
+                </Button>
+              )}
+              <ResponsiveDialogTitle>{getStepTitle()}</ResponsiveDialogTitle>
+            </div>
+          </DialogWrapper>
+        </div>
+
+        <div className={isMobile ? 'flex-1 overflow-y-auto' : ''}>
+          {/* Step 1: Tipo */}
+          {step === "type" && (
+            <div className={isMobile ? 'p-4' : 'py-4'}>
+              <TransactionTypeSelector
+                value={selectedType}
+                onChange={handleTypeSelect}
+              />
+            </div>
+          )}
+
+          {/* Step 2: Modo */}
+          {step === "mode" && (
+            <div className={isMobile ? 'p-4' : 'py-4'}>
+              <TransactionModeSelector
+                value={selectedMode}
+                onChange={handleModeSelect}
+              />
+            </div>
+          )}
+
+          {/* Step 3: Formulário */}
+          {step === "form" && (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className={isMobile ? 'space-y-5 p-4' : 'space-y-5 py-2'}
               >
-                <MdArrowBack className="h-5 w-5" />
-              </Button>
-            )}
-            <DialogTitle>{getStepTitle()}</DialogTitle>
-          </div>
-        </DialogWrapper>
-
-        {/* Step 1: Tipo */}
-        {step === "type" && (
-          <div className="py-4">
-            <TransactionTypeSelector
-              value={selectedType}
-              onChange={handleTypeSelect}
-            />
-          </div>
-        )}
-
-        {/* Step 2: Modo */}
-        {step === "mode" && (
-          <div className="py-4">
-            <TransactionModeSelector
-              value={selectedMode}
-              onChange={handleModeSelect}
-            />
-          </div>
-        )}
-
-        {/* Step 3: Formulário */}
-        {step === "form" && (
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-5 py-2"
-            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SelectField
                   name="account_id"
@@ -436,28 +451,34 @@ export function TransactionFormWizard({
                 </div>
               )}
 
-              <div className="flex justify-between gap-3 pt-4 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                  disabled={isLoading}
-                >
-                  <MdArrowBack className="mr-2 h-4 w-4" />
-                  Voltar
-                </Button>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    "Registrar Transação"
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        )}
-      </DialogContent>
-    </Dialog>
+                <div className={isMobile ? 'flex gap-3 pt-4 sticky bottom-0 bg-background border-t pb-4' : 'flex justify-between gap-3 pt-4 border-t'}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleBack}
+                    disabled={isLoading}
+                    className={isMobile ? 'flex-1 h-11' : ''}
+                  >
+                    <MdArrowBack className="mr-2 h-4 w-4" />
+                    Voltar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className={isMobile ? 'flex-1 h-11' : ''}
+                  >
+                    {isLoading ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      "Registrar Transação"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
+        </div>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
