@@ -4,7 +4,6 @@ import {
   ResponsiveDialogContent,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
-  DrawerHandle,
 } from '@presentation/components/ui/responsive-dialog'
 import { Button } from '@presentation/components/ui/button'
 import { Form } from '@presentation/components/ui/form'
@@ -15,6 +14,7 @@ import { DialogWrapper } from '@presentation/components/shared/DialogWrapper'
 import { Alert, AlertDescription } from '@presentation/components/ui/alert'
 import { Label } from '@presentation/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@presentation/components/ui/radio-group'
+import { MultiStepForm } from '@presentation/components/ui/multi-step-form'
 import { AccountTypeLabels } from '@core/enums/AccountType'
 import { useCreateAccount } from '@application/hooks/use-create-account'
 import { useCreateAccountDialogStore } from '@presentation/stores/use-create-account-dialog'
@@ -41,98 +41,150 @@ export function CreateAccountDialog() {
     handleSubmit(e)
   }
 
+  // Step contents for mobile multi-step form
+  const step1Content = (
+    <div className="space-y-4">
+      <InputField
+        name="name"
+        label="Nome da Conta"
+        placeholder="Ex: Conta Corrente Nubank"
+        icon={MdAccountBalanceWallet}
+        required
+      />
+
+      <SelectField
+        name="type"
+        label="Tipo de Conta"
+        placeholder="Selecione o tipo"
+        options={accountTypeOptions}
+        icon={MdCreditCard}
+        required
+      />
+    </div>
+  )
+
+  const step2Content = (
+    <div className="space-y-3">
+      <Label>Titularidade da Conta</Label>
+      {allowPersonalAccounts ? (
+        <RadioGroup
+          value={form.watch('ownership')}
+          onValueChange={(value) => form.setValue('ownership', value as 'joint' | 'personal')}
+          className="space-y-2"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="joint" id="joint" />
+            <Label htmlFor="joint" className="font-normal cursor-pointer flex items-center gap-2">
+              <MdPeople className="h-4 w-4" />
+              Conta Conjunta (ambos têm acesso)
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="personal" id="personal" />
+            <Label htmlFor="personal" className="font-normal cursor-pointer flex items-center gap-2">
+              <MdPerson className="h-4 w-4" />
+              Conta Pessoal (apenas você tem acesso)
+            </Label>
+          </div>
+        </RadioGroup>
+      ) : (
+        <>
+          <Alert>
+            <MdInfo className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              Apenas contas conjuntas estão disponíveis no seu modelo financeiro atual.
+            </AlertDescription>
+          </Alert>
+          <input type="hidden" {...form.register('ownership')} value="joint" />
+        </>
+      )}
+    </div>
+  )
+
+  const step3Content = (
+    <InputField
+      name="initial_balance"
+      label="Saldo Inicial"
+      type="money"
+      placeholder="R$ 0,00"
+      icon={MdAttachMoney}
+      required
+    />
+  )
+
+  const mobileSteps = [
+    {
+      title: 'Informações Básicas',
+      description: 'Nome e tipo da conta',
+      content: step1Content,
+      validate: async () => {
+        const name = form.getValues('name')
+        const type = form.getValues('type')
+        return !!(name && type)
+      },
+    },
+    {
+      title: 'Titularidade',
+      description: 'Quem tem acesso a esta conta',
+      content: step2Content,
+      validate: async () => {
+        const ownership = form.getValues('ownership')
+        return !!ownership
+      },
+    },
+    {
+      title: 'Saldo Inicial',
+      description: 'Defina o saldo atual da conta',
+      content: step3Content,
+    },
+  ]
+
   return (
     <ResponsiveDialog open={isOpen} onOpenChange={handleClose}>
-      <ResponsiveDialogContent className={isMobile ? 'px-4' : ''}>
-        {isMobile && <DrawerHandle />}
-
-        <ResponsiveDialogHeader>
-          <DialogWrapper
-            icon={MdAccountBalanceWallet}
-            description="Crie uma nova conta para gerenciar suas finanças do casal"
-          >
-            <ResponsiveDialogTitle>Nova Conta</ResponsiveDialogTitle>
-          </DialogWrapper>
-        </ResponsiveDialogHeader>
+      <ResponsiveDialogContent className={isMobile ? 'p-0' : ''}>
+        {!isMobile && (
+          <ResponsiveDialogHeader>
+            <DialogWrapper
+              icon={MdAccountBalanceWallet}
+              description="Crie uma nova conta para gerenciar suas finanças do casal"
+            >
+              <ResponsiveDialogTitle>Nova Conta</ResponsiveDialogTitle>
+            </DialogWrapper>
+          </ResponsiveDialogHeader>
+        )}
 
         <Form {...form}>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <InputField
-              name="name"
-              label="Nome da Conta"
-              placeholder="Ex: Conta Corrente Nubank"
-              icon={MdAccountBalanceWallet}
-              required
-            />
+          <form id="create-account-form" onSubmit={onSubmit} className={isMobile ? '' : 'space-y-4'}>
+            {isMobile ? (
+              <MultiStepForm
+                steps={mobileSteps}
+                onComplete={() => {
+                  const formElement = document.getElementById('create-account-form') as HTMLFormElement
+                  formElement?.requestSubmit()
+                }}
+                onCancel={handleClose}
+              />
+            ) : (
+              <>
+                {step1Content}
+                {step2Content}
+                {step3Content}
 
-            <SelectField
-              name="type"
-              label="Tipo de Conta"
-              placeholder="Selecione o tipo"
-              options={accountTypeOptions}
-              icon={MdCreditCard}
-              required
-            />
-
-            {/* Ownership Selection */}
-            <div className="space-y-3">
-              <Label>Titularidade da Conta</Label>
-              {allowPersonalAccounts ? (
-                <RadioGroup
-                  value={form.watch('ownership')}
-                  onValueChange={(value) => form.setValue('ownership', value as 'joint' | 'personal')}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="joint" id="joint" />
-                    <Label htmlFor="joint" className="font-normal cursor-pointer flex items-center gap-2">
-                      <MdPeople className="h-4 w-4" />
-                      Conta Conjunta (ambos têm acesso)
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="personal" id="personal" />
-                    <Label htmlFor="personal" className="font-normal cursor-pointer flex items-center gap-2">
-                      <MdPerson className="h-4 w-4" />
-                      Conta Pessoal (apenas você tem acesso)
-                    </Label>
-                  </div>
-                </RadioGroup>
-              ) : (
-                <>
-                  <Alert>
-                    <MdInfo className="h-4 w-4" />
-                    <AlertDescription className="text-sm">
-                      Apenas contas conjuntas estão disponíveis no seu modelo financeiro atual.
-                    </AlertDescription>
-                  </Alert>
-                  <input type="hidden" {...form.register('ownership')} value="joint" />
-                </>
-              )}
-            </div>
-
-            <InputField
-              name="initial_balance"
-              label="Saldo Inicial"
-              type="money"
-              placeholder="R$ 0,00"
-              icon={MdAttachMoney}
-              required
-            />
-
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isPending || !canSubmit}>
-                {isPending ? <><LoadingSpinner size="sm" /> Carregando ...</> : 'Criar'}
-              </Button>
-            </div>
+                <div className="flex justify-end gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClose}
+                    disabled={isPending}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={isPending || !canSubmit}>
+                    {isPending ? <><LoadingSpinner size="sm" /> Carregando ...</> : 'Criar'}
+                  </Button>
+                </div>
+              </>
+            )}
           </form>
         </Form>
       </ResponsiveDialogContent>
