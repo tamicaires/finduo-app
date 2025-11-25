@@ -44,6 +44,16 @@ export const accountRepository = {
     return response.data
   },
 
+  /**
+   * Archives an account (soft delete - recommended for normal use)
+   * - Account receives archived_at timestamp
+   * - Hidden from all listings
+   * - Transactions are preserved (appear in reports)
+   * - Can be restored in the future
+   * - Instant (no balance or transaction validation)
+   * @param id Account ID
+   * @returns Archive response with archived account ID
+   */
   async archive(id: string): Promise<ArchiveAccountResponse> {
     const response = await apiClient.patch<ArchiveAccountResponse>(
       API_ROUTES.ARCHIVE_ACCOUNT(id)
@@ -51,9 +61,23 @@ export const accountRepository = {
     return response.data
   },
 
+  /**
+   * ⚠️ PERMANENTLY deletes an account and ALL its transactions
+   *
+   * CRITICAL: Requires explicit user confirmation
+   *
+   * What happens:
+   * - Account is REMOVED from database
+   * - ALL transactions are deleted (CASCADE)
+   * - ALL installment templates are deleted (CASCADE)
+   * - IRREVERSIBLE - cannot be undone
+   *
+   * Use archive() instead for normal operations
+   *
+   * @param id Account ID
+   * @returns Delete response with deleted account ID
+   */
   async delete(id: string): Promise<DeleteAccountResponse> {
-    // ⚠️ IMPORTANT: This permanently deletes the account AND all its transactions
-    // Use archive() instead for soft delete
     const response = await apiClient.delete<DeleteAccountResponse>(
       API_ROUTES.DELETE_ACCOUNT(id)
     )

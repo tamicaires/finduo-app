@@ -14,9 +14,12 @@ import {
   CreditCard,
   LogOut,
   User,
+  Plus,
 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useAuth } from '@application/hooks/use-auth'
 import { useTheme } from '@application/hooks/use-theme'
+import { useHaptics } from '@presentation/hooks/use-haptics'
 import { Button } from '@presentation/components/ui/button'
 import { cn } from '@shared/utils'
 import { Logo } from '@presentation/components/ui/logo'
@@ -70,6 +73,8 @@ export function Sidebar() {
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [showTransactionMenu, setShowTransactionMenu] = useState(false)
+  const haptics = useHaptics()
 
   const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
 
@@ -173,41 +178,148 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Bottom Navigation - Mobile Only (App Style) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card lg:hidden">
-        <div className="flex items-center justify-around px-2 py-2 safe-area-bottom">
-          {navItems.slice(0, 4).map((item) => {
-            const Icon = item.icon
-            const isActive = location.pathname === item.path
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  'flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-colors min-w-[64px]',
-                  isActive
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-                )}
-              >
-                <Icon className={cn('h-5 w-5', isActive && 'fill-primary/20')} />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </Link>
-            )
-          })}
+      {/* Bottom Navigation - Mobile Only (Enhanced with FAB) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
+        {/* Overlay quando perfil menu aberto */}
+        {(isProfileMenuOpen || showTransactionMenu) && (
+          <div
+            className="fixed inset-0 bg-black/20 z-40"
+            onClick={() => {
+              setIsProfileMenuOpen(false)
+              setShowTransactionMenu(false)
+            }}
+          />
+        )}
 
-          {/* Profile Button */}
-          <button
-            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className={cn(
-              'flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-colors min-w-[64px]',
-              isProfileMenuOpen ? 'text-primary' : 'text-muted-foreground'
-            )}
-          >
-            <User className={cn('h-5 w-5', isProfileMenuOpen && 'fill-primary/20')} />
-            <span className="text-[10px] font-medium">Perfil</span>
-          </button>
+        {/* Barra de navegação */}
+        <div className="bg-card border-t pb-safe">
+          <div className="relative flex items-center justify-around px-2 py-2">
+            {/* Item 1: Dashboard */}
+            <Link
+              to="/dashboard"
+              onClick={() => haptics.light()}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-all min-w-[64px] active:scale-95',
+                location.pathname === '/dashboard'
+                  ? 'text-primary'
+                  : 'text-muted-foreground'
+              )}
+            >
+              <LayoutDashboard className={cn('h-5 w-5', location.pathname === '/dashboard' && 'fill-primary/20')} />
+              <span className="text-[10px] font-medium">Início</span>
+            </Link>
+
+            {/* Item 2: Contas */}
+            <Link
+              to="/accounts"
+              onClick={() => haptics.light()}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-all min-w-[64px] active:scale-95',
+                location.pathname === '/accounts'
+                  ? 'text-primary'
+                  : 'text-muted-foreground'
+              )}
+            >
+              <Wallet className={cn('h-5 w-5', location.pathname === '/accounts' && 'fill-primary/20')} />
+              <span className="text-[10px] font-medium">Contas</span>
+            </Link>
+
+            {/* FAB Central - Botão Destacado para Nova Transação */}
+            <div className="relative -mt-8 flex items-center justify-center min-w-[64px]">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  haptics.medium()
+                  setShowTransactionMenu(!showTransactionMenu)
+                }}
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/80 text-white shadow-lg shadow-primary/50 active:shadow-primary/30 transition-shadow"
+              >
+                <motion.div
+                  animate={{ rotate: showTransactionMenu ? 45 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Plus className="h-7 w-7" strokeWidth={2.5} />
+                </motion.div>
+              </motion.button>
+
+              {/* Badge de indicador */}
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+              </span>
+            </div>
+
+            {/* Item 3: Transações */}
+            <Link
+              to="/transactions"
+              onClick={() => haptics.light()}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-all min-w-[64px] active:scale-95',
+                location.pathname === '/transactions'
+                  ? 'text-primary'
+                  : 'text-muted-foreground'
+              )}
+            >
+              <ArrowLeftRight className={cn('h-5 w-5', location.pathname === '/transactions' && 'fill-primary/20')} />
+              <span className="text-[10px] font-medium">Histórico</span>
+            </Link>
+
+            {/* Item 4: Perfil */}
+            <button
+              onClick={() => {
+                haptics.light()
+                setIsProfileMenuOpen(!isProfileMenuOpen)
+              }}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-all min-w-[64px] active:scale-95',
+                isProfileMenuOpen ? 'text-primary' : 'text-muted-foreground'
+              )}
+            >
+              <User className={cn('h-5 w-5', isProfileMenuOpen && 'fill-primary/20')} />
+              <span className="text-[10px] font-medium">Perfil</span>
+            </button>
+          </div>
         </div>
+
+        {/* Menu rápido de transações (slide up) */}
+        {showTransactionMenu && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="absolute bottom-20 left-4 right-4 bg-card border rounded-2xl shadow-2xl z-50 p-4"
+          >
+            <p className="text-sm font-semibold mb-3 text-center">Nova Transação</p>
+            <div className="grid grid-cols-2 gap-3">
+              <Link
+                to="/transactions?new=expense"
+                onClick={() => {
+                  haptics.medium()
+                  setShowTransactionMenu(false)
+                }}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 active:scale-95 transition-transform"
+              >
+                <div className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center">
+                  <ArrowLeftRight className="h-6 w-6 text-white rotate-90" />
+                </div>
+                <span className="text-sm font-medium text-red-700 dark:text-red-400">Despesa</span>
+              </Link>
+              <Link
+                to="/transactions?new=income"
+                onClick={() => {
+                  haptics.medium()
+                  setShowTransactionMenu(false)
+                }}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 active:scale-95 transition-transform"
+              >
+                <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                  <ArrowLeftRight className="h-6 w-6 text-white -rotate-90" />
+                </div>
+                <span className="text-sm font-medium text-green-700 dark:text-green-400">Receita</span>
+              </Link>
+            </div>
+          </motion.div>
+        )}
 
         {/* Profile Menu Overlay */}
         {isProfileMenuOpen && (

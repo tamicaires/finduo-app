@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { HiPlus, HiTrash, HiTrendingUp, HiTrendingDown } from 'react-icons/hi'
-import { MdLock, MdShare } from 'react-icons/md'
+import { MdLock, MdShare, MdAttachMoney, MdMoneyOff } from 'react-icons/md'
 import { toast } from 'sonner'
 import { useTransactions } from '@application/hooks/use-transactions'
 import { useAccounts } from '@application/hooks/use-accounts'
@@ -8,9 +8,11 @@ import { Button } from '@presentation/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@presentation/components/ui/card'
 import { Switch } from '@presentation/components/ui/switch'
 import { LoadingSpinner } from '@presentation/components/shared/LoadingSpinner'
+import { SwipeableCard, type SwipeAction } from '@presentation/components/ui/swipeable-card'
 import { TransactionWizard } from '@presentation/components/transactions/wizard'
 import { DeleteTransactionDialog } from '@presentation/components/transactions/DeleteTransactionDialog'
 import { useDeleteTransactionDialogStore } from '@presentation/stores/use-delete-transaction-dialog'
+import { useIsMobile } from '@presentation/hooks/use-is-mobile'
 import { TransactionFilters, type TransactionFiltersState } from '@presentation/components/transactions/TransactionFilters'
 import { TransactionType, TransactionTypeLabels } from '@core/enums/TransactionType'
 import { TransactionCategoryLabels } from '@core/enums/TransactionCategory'
@@ -27,6 +29,7 @@ import type { TransactionMode } from '@core/types/transaction-mode'
 export function TransactionsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [filters, setFilters] = useState<TransactionFiltersState>({})
+  const isMobile = useIsMobile()
 
   const { openDialog: openDeleteDialog } = useDeleteTransactionDialogStore()
 
@@ -214,11 +217,9 @@ export function TransactionsPage() {
                   <p className="text-xs md:text-sm mt-2">Clique em "Nova" para adicionar uma transação</p>
                 </div>
               ) : (
-                transactionsList.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="p-3 md:p-4 hover:bg-accent/50 transition-colors cursor-pointer group"
-                  >
+                transactionsList.map((transaction) => {
+                  const transactionContent = (
+                    <div className="p-3 md:p-4 hover:bg-accent/50 transition-colors cursor-pointer group">
                     <div className="flex items-center justify-between gap-2 md:gap-4">
                       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                         {/* Ícone */}
@@ -294,21 +295,62 @@ export function TransactionsPage() {
                           </div>
                         )}
 
-                        {/* Botão Deletar - Mobile sempre visível, Desktop hover */}
-                        <div className="md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 md:h-8 md:w-8"
-                            onClick={() => handleDelete(transaction.id)}
-                          >
-                            <HiTrash className="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600" />
-                          </Button>
-                        </div>
+                        {/* Botão Deletar - Desktop hover apenas */}
+                        {!isMobile && (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleDelete(transaction.id)}
+                            >
+                              <HiTrash className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))
+                    </div>
+                  )
+
+                  // Mobile: Swipeable com ações
+                  if (isMobile) {
+                    const swipeActions: SwipeAction[] = [
+                      {
+                        label: 'Excluir',
+                        icon: <HiTrash className="h-5 w-5" />,
+                        onClick: () => handleDelete(transaction.id),
+                        color: 'destructive',
+                      },
+                    ]
+
+                    // Adicionar toggle gasto livre apenas para despesas
+                    if (transaction.type === TransactionType.EXPENSE) {
+                      swipeActions.unshift({
+                        label: transaction.is_free_spending ? 'Remover Gasto Livre' : 'Gasto Livre',
+                        icon: transaction.is_free_spending ? (
+                          <MdMoneyOff className="h-5 w-5" />
+                        ) : (
+                          <MdAttachMoney className="h-5 w-5" />
+                        ),
+                        onClick: () => handleToggleFreeSpending(transaction.id, transaction.is_free_spending),
+                        color: 'warning',
+                      })
+                    }
+
+                    return (
+                      <SwipeableCard
+                        key={transaction.id}
+                        customActions={swipeActions}
+                      >
+                        {transactionContent}
+                      </SwipeableCard>
+                    )
+                  }
+
+                  // Desktop: Normal
+                  return transactionContent
+                })
               )}
             </div>
           </CardContent>

@@ -57,7 +57,7 @@ export function LoginPage() {
                 placeholder="••••••••"
               />
 
-              <Button type="submit" className="w-full" disabled={isSigningIn} variant="destructive">
+              <Button type="submit" className="w-full" disabled={isSigningIn} variant="default">
                 {isSigningIn ? <LoadingSpinner size="sm" /> : 'Entrar'}
               </Button>
             </form>
