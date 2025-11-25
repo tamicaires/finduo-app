@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react'
 
+// Extend Navigator interface to include iOS standalone property
+interface NavigatorStandalone extends Navigator {
+  standalone?: boolean
+}
+
 /**
  * Hook para detectar iOS (iPhone, iPad, iPod)
  * @returns objeto com informações sobre iOS
@@ -11,10 +16,10 @@ export function useIsIOS() {
   useEffect(() => {
     // Detect iOS device
     const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
-    
+
     // Detect if app is installed (standalone mode)
-    const standalone = 
-      (window.navigator as any).standalone === true || 
+    const standalone =
+      (window.navigator as NavigatorStandalone).standalone === true ||
       window.matchMedia('(display-mode: standalone)').matches
 
     setIsIOS(iOS)

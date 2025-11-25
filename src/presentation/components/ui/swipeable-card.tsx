@@ -6,7 +6,7 @@ import { Trash2, Edit, Archive } from 'lucide-react'
 import { cn } from '@shared/utils'
 import { useHaptics } from '@presentation/hooks/use-haptics'
 
-interface SwipeAction {
+export interface SwipeAction {
   icon: ReactNode
   label: string
   onClick: () => void
@@ -79,9 +79,9 @@ export function SwipeableCard({
     ['rgb(239 68 68)', 'rgb(251 146 60)', 'transparent']
   )
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
     const threshold = -100
-    
+
     if (info.offset.x < threshold) {
       // Swipe significativo - manter aberto
       haptics.light()
